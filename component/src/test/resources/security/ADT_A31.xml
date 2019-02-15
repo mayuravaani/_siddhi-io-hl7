@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<HL7v2xConformanceProfile HL7Version="2.4" ProfileType="HL7" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="">
+	<MetaData Name="update person information" OrgName="UHN" Version="HL7 2.4" Topics="confsig-UHN-2.4-profile-accNE_accAL-Deferred"/>
+	<UseCase/>
+	<Encodings>
+		<Encoding>ER7</Encoding>
+	</Encodings>
+	<DynamicDef AccAck="NE" AppAck="AL" MsgAckMode="Deferred"/>
+	<HL7v2xStaticDef MsgType="ADT" EventType="A31" MsgStructID="ADT_A05" EventDesc="update person information" Role="Sender">
+		<MetaData Name="update person information" OrgName="UHN" Version="HL7 2.4" Topics="confsig-UHN-2.4-static-ADT-A31-null-ADT_A05-HL7 2.4--Sender"/>
+		<Segment Name="MSH" LongName="Message Header" Usage="R" Min="1" Max="1">
+			<Field Name="Field Separator" Usage="R" Min="1" Max="1" Datatype="ST" Length="1" ConstantValue="|" ItemNo="00001">
+				<Reference>2.16.9.1</Reference>
+				<DataValues ExValue="|"/>
+			</Field>
+			<Field Name="Encoding Characters" Usage="R" Min="1" Max="1" Datatype="ST" Length="4" ConstantValue="^~\&amp;" ItemNo="00002">
+				<Reference>2.16.9.2</Reference>
+				<DataValues ExValue="^~\&amp;"/>
+			</Field>
+			<Field Name="Sending Application" Usage="R" Min="1" Max="1" Datatype="HD" Length="180" ItemNo="00003">
+				<Reference>2.16.9.3</Reference>
+				<Component Name="namespace ID" Usage="R" Datatype="IS" Length="15" Table="0361">
+				</Component>
+				<Component Name="universal ID" Usage="X" Datatype="ST" Length="3">
+				</Component>
+				<Component Name="universal ID type" Usage="X" Datatype="ID" Length="3" Table="0301">
+

@@ -1,0 +1,153 @@
+/*
+ *  Copyright (c) 2019 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  WSO2 Inc. licenses this file to you under the Apache License,
+ *  Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ *
+ */
+
+package org.wso2.extension.siddhi.io.hl7.source;
+
+import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.HapiContext;
+import ca.uhn.hl7v2.conf.ProfileException;
+import ca.uhn.hl7v2.conf.check.DefaultValidator;
+import ca.uhn.hl7v2.conf.spec.RuntimeProfile;
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.parser.Parser;
+import ca.uhn.hl7v2.protocol.ReceivingApplication;
+import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
+import org.apache.log4j.Logger;
+import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * HL7ReceivingApp is a consumer of a message and it process the message returns the acknowledgement.
+ */
+
+public class Hl7ReceivingApp implements ReceivingApplication {
+
+    private static final Logger log = Logger.getLogger(Hl7ReceivingApp.class);
+    private SourceEventListener sourceEventListener;
+    private String hl7EncodeType;
+    private String hl7AckType;
+    private boolean paused;
+    private ReentrantLock lock = new ReentrantLock();
+    private Condition condition = lock.newCondition();
+    private HapiContext hapiContext;
+    private boolean conformanceUsed;
+    private RuntimeProfile conformanceProfile;
+
+    public Hl7ReceivingApp() {
+
+    }
+
+    public Hl7ReceivingApp(SourceEventListener sourceEventListener, String hl7EncodeType, String hl7AckType,
+                           HapiContext hapiContext, boolean conformanceUsed, RuntimeProfile conformanceProfile) {
+
+        this.sourceEventListener = sourceEventListener;
+        this.hl7EncodeType = hl7EncodeType;
+        this.hl7AckType = hl7AckType;
+        this.hapiContext = hapiContext;
+        this.conformanceUsed = conformanceUsed;
+        this.conformanceProfile = conformanceProfile;
+
+    }
+
+    @Override
+    public Message processMessage(Message theMessage, Map<String, Object> theMetadata)
+            throws HL7Exception, ReceivingApplicationException {
+
+        Parser pipeParser = hapiContext.getPipeParser();
+        Parser xmlParser = hapiContext.getXMLParser();
+        if (paused) { //spurious wakeup condition is deliberately traded off for performance
+            lock.lock();
+            try {
+                while (paused) {
+                    condition.await();
+                }
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            } finally {
+                lock.unlock();
+            }
+        }
+        if (hl7EncodeType.toUpperCase(Locale.ENGLISH).equals("ER7")) {
+            String er7Msg = pipeParser.encode(theMessage);
+            sourceEventListener.onEvent("payload: " + "'" + er7Msg + "'", null);
+        } else {
+            String xmlMsg = xmlParser.encode(theMessage);
+            sourceEventListener.onEvent(xmlMsg, null);
+        }
+        Message ackMsg;
+        try {
+            ackMsg = theMessage.generateACK();
+        } catch (IOException e) {
+            throw new ReceivingApplicationException("Error: ", e);
+        }
+        if (hl7AckType.toUpperCase(Locale.ENGLISH).equals("ER7")) {
+            String er7AckMsg = pipeParser.encode(ackMsg);
+            er7AckMsg = er7AckMsg.replaceAll("\\r", "\n");
+            log.info("Sent Acknowledgement: \n" + er7AckMsg);
+        } else  {
+            String xmlAckMsg = xmlParser.encode(ackMsg);
+            log.info("Sent Acknowledgement: \n" + xmlAckMsg);
+        }
+
+        if (conformanceUsed) {
+            HL7Exception[] problems;
+            try {
+                problems = new DefaultValidator().validate(theMessage,
+                        conformanceProfile.getMessage());
+            } catch (ProfileException e) {
+                throw new HL7Exception(e);
+            }
+            if (problems.length > 0) {
+                throw new HL7Exception("The following validation errors were found during message " +
+                        "validation: \n" + Arrays.toString(problems) + "\n");
+            } else {
+                log.info("No Validation Errors with the Conformance Profile.");
+            }
+        }
+        return ackMsg;
+    }
+
+    @Override
+    public boolean canProcess(Message theMessage) {
+
+        return true;
+    }
+
+    public void pause() {
+
+        paused = true;
+    }
+
+    public void resume() {
+
+        paused = false;
+        try {
+            lock.lock();
+            condition.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+}
