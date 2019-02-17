@@ -23,6 +23,7 @@ import ca.uhn.hl7v2.protocol.ApplicationRouter;
 
 /**
  * RegistrationEventRouting is used to route messages to the appropriate application.
+ * This method handles all Message Types and Trigger Events.
  */
 public class RegistrationEventRouting implements ApplicationRouter.AppRoutingData {
 

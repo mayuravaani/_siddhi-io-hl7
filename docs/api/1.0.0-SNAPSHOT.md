@@ -4,7 +4,7 @@
 
 ### hl7 *<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#sink">(Sink)</a>*
 
-<p style="word-wrap: break-word">The hl7 sink publishes the hl7 messages to the hl7 receiver using MLLP protocol.</p>
+<p style="word-wrap: break-word">The hl7 sink publishes the hl7 messages using MLLP protocol.</p>
 
 <span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span>
 ```
@@ -23,7 +23,7 @@
     </tr>
     <tr>
         <td style="vertical-align: top">uri</td>
-        <td style="vertical-align: top; word-wrap: break-word">The URI that used to connect to an HL7 Server.<br>&nbsp;e.g.,<br><code>{hostname}:{port}</code>, <br><code>hl7://{hostname}:{port}</code> <br><code>{hostname}:{port}</code> is preferable.</td>
+        <td style="vertical-align: top; word-wrap: break-word">The URI that used to connect to a HL7 Server.<br>&nbsp;e.g.,<br><code>{hostname}:{port}</code>, <br><code>hl7://{hostname}:{port}</code> <br><code>{hostname}:{port}</code> is preferable.</td>
         <td style="vertical-align: top"></td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">No</td>
@@ -31,7 +31,7 @@
     </tr>
     <tr>
         <td style="vertical-align: top">hl7.encoding</td>
-        <td style="vertical-align: top; word-wrap: break-word">Encoding method of hl7. This can be er7 or xml. You should define hl7 encoding type according to their input.<br>e.g.,<br>If the transmitting message is in <code>er7</code>(text) format then the encoding type should be <code>er7</code>.<br>If the transmitting message is in <code>xml</code> format then the encoding type should be <code>xml</code>.</td>
+        <td style="vertical-align: top; word-wrap: break-word">Encoding method of hl7. This can be er7 or xml. User should define hl7 encoding type according to the input.<br>e.g.,<br>If the transmitting message is in <code>er7</code>(text) format then the encoding type should be <code>er7</code>.<br>If the transmitting message is in <code>xml</code> format then the encoding type should be <code>xml</code>.</td>
         <td style="vertical-align: top"></td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">No</td>
@@ -92,8 +92,7 @@
 ```
 @App:name('Hl7TestAppForER7') 
 @sink(type = 'hl7', 
-host.name = 'localhost', 
-port = 1080, 
+uri = 'localhost:1080', 
 hl7.encoding = 'er7', 
 @map(type = 'text')) 
 define stream hl7stream(payload string);
@@ -105,8 +104,7 @@ define stream hl7stream(payload string);
 ```
 @App:name('Hl7TestAppForXML') 
 @sink(type = 'hl7', 
-host.name = 'localhost',
-port = 1080, 
+uri = 'localhost:1080', 
 hl7.encoding = 'xml', 
 @map(type = 'xml', enclosing.element="<ADT_A01  xmlns='urn:hl7-org:v2xml'>", @payload('<MSH><MSH.1>{{MSH1}}</MSH.1><MSH.2>{{MSH2}}</MSH.2><MSH.3><HD.1>{{MSH3HD1}}</HD.1></MSH.3><MSH.4><HD.1>{{MSH4HD1}}</HD.1></MSH.4><MSH.5><HD.1>{{MSH5HD1}}</HD.1></MSH.5><MSH.6><HD.1>{{MSH6HD1}}</HD.1></MSH.6><MSH.7>{{MSH7}}</MSH.7><MSH.8>{{MSH8}}</MSH.8><MSH.9><CM_MSG.1>{{CM_MSG1}}</CM_MSG.1><CM_MSG.2>{{CM_MSG2}}</CM_MSG.2></MSH.9><MSH.10>{{MSH10}}</MSH.10><MSH.11>{{MSH11}}</MSH.11><MSH.12>{{MSH12}}</MSH.12></MSH>'))) 
 define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string, MSH5HD1 string, MSH6HD1 string, MSH7 string, MSH8 string, CM_MSG1 string, CM_MSG2 string,MSH10 string,MSH11 string, MSH12 string);
@@ -118,7 +116,7 @@ define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string
 
 ### hl7 *<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#source">(Source)</a>*
 
-<p style="word-wrap: break-word">The hl7 source consumes the hl7 message using MLLP protocol.</p>
+<p style="word-wrap: break-word">The hl7 source consumes the hl7 messages using MLLP protocol.</p>
 
 <span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span>
 ```
@@ -145,7 +143,7 @@ define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string
     </tr>
     <tr>
         <td style="vertical-align: top">hl7.encoding</td>
-        <td style="vertical-align: top; word-wrap: break-word">Encoding method of received hl7. This can be er7 or xml. You should define hl7 encoding type according to their mapping.<br>e.g.,<br>If you are using text mapping, then the hl7 encoding type should be er7.<br>If you are using xml mapping, then the hl7 encoding type should be xml.</td>
+        <td style="vertical-align: top; word-wrap: break-word">Encoding method of received hl7. This can be er7 or xml. User should define hl7 encoding type according to their mapping.<br>e.g.,<br>If text mapping is used, then the hl7 encoding type should be er7.<br>If xml mapping is used, then the hl7 encoding type should be xml.</td>
         <td style="vertical-align: top"></td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">No</td>

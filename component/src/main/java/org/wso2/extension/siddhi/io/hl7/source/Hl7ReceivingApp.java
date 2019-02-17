@@ -58,7 +58,16 @@ public class Hl7ReceivingApp implements ReceivingApplication {
     public Hl7ReceivingApp() {
 
     }
-
+    /**
+     * Handles Processing of the Receiving Messages.
+     *
+     * @param hapiContext - context that is used to configure the Hapi core services
+     * @param hl7EncodeType - Encoding type of hl7 receiving message
+     * @param hl7AckType - Encoding type of hl7 acknowledgement message
+     * @param conformanceUsed - Conformance profile is used or not
+     * @param conformanceProfile - Conformance profile file name
+     * @param sourceEventListener - listens events
+     */
     public Hl7ReceivingApp(SourceEventListener sourceEventListener, String hl7EncodeType, String hl7AckType,
                            HapiContext hapiContext, boolean conformanceUsed, RuntimeProfile conformanceProfile) {
 

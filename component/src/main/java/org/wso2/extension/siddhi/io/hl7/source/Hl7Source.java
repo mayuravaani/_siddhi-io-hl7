@@ -62,7 +62,7 @@ import java.util.Map;
 @Extension(
         name = "hl7",
         namespace = "source",
-        description = "The hl7 source consumes the hl7 message using MLLP protocol.",
+        description = "The hl7 source consumes the hl7 messages using MLLP protocol.",
         parameters = {
                 @Parameter(name = "port",
                         description = "This is the unique logical address used to establish the connection for " +
@@ -70,11 +70,11 @@ import java.util.Map;
                         type = {DataType.INT}),
 
                 @Parameter(name = "hl7.encoding",
-                        description = "Encoding method of received hl7. This can be er7 or xml. You should define " +
+                        description = "Encoding method of received hl7. This can be er7 or xml. User should define " +
                                 "hl7 encoding type according to their mapping.\n" +
                                 "e.g.,\n" +
-                                "If you are using text mapping, then the hl7 encoding type should be er7.\n" +
-                                "If you are using xml mapping, then the hl7 encoding type should be xml.",
+                                "If text mapping is used, then the hl7 encoding type should be er7.\n" +
+                                "If xml mapping is used, then the hl7 encoding type should be xml.",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "hl7.ack.encoding",
@@ -212,64 +212,63 @@ public class Hl7Source extends Source {
         MinLowerLayerProtocol mllp = new MinLowerLayerProtocol();
         mllp.setCharset(charset);
         hapiContext.setLowerLayerProtocol(mllp);
-            if (tlsEnabled) {
-                try {
-                    KeyStore keyStore = KeystoreUtils.loadKeystore(tlsKeystoreFilepath, tlsKeystorePassphrase);
-                    KeystoreUtils.validateKeystoreForTlsReceiving(keyStore);
-                    CustomCertificateTlsSocketFactory tlsFac = new CustomCertificateTlsSocketFactory();
-                    tlsFac.setKeystoreFilename(tlsKeystoreFilepath);
-                    tlsFac.setKeystorePassphrase(tlsKeystorePassphrase);
-                    hapiContext.setSocketFactory(new HapiSocketTlsFactoryWrapper(tlsFac));
-
-                } catch (NoSuchAlgorithmException | CertificateException | KeyStoreException | IOException e) {
-                    if (e.getCause() instanceof UnrecoverableKeyException) {
-                        throw new SiddhiAppCreationException("Keystore password appears to be incorrect. Please " +
-                                "check the tls.keystore.passphrase defined in " + sourceEventListener, e);
-                    } else {
-                        throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
-                                "tls.keystore.filepath defined in " + sourceEventListener, e);
-                    }
+        if (tlsEnabled) {
+            try {
+                KeyStore keyStore = KeystoreUtils.loadKeystore(tlsKeystoreFilepath, tlsKeystorePassphrase);
+                KeystoreUtils.validateKeystoreForTlsReceiving(keyStore);
+                CustomCertificateTlsSocketFactory tlsFac = new CustomCertificateTlsSocketFactory();
+                tlsFac.setKeystoreFilename(tlsKeystoreFilepath);
+                tlsFac.setKeystorePassphrase(tlsKeystorePassphrase);
+                hapiContext.setSocketFactory(new HapiSocketTlsFactoryWrapper(tlsFac));
+            } catch (NoSuchAlgorithmException | CertificateException | KeyStoreException | IOException e) {
+                if (e.getCause() instanceof UnrecoverableKeyException) {
+                    throw new SiddhiAppCreationException("Keystore password appears to be incorrect. Please " +
+                            "check the tls.keystore.passphrase defined in " + sourceEventListener, e);
+                } else {
+                    throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
+                            "tls.keystore.filepath defined in " + sourceEventListener, e);
                 }
             }
+        }
 
-            if (conformanceProfileUsed) {
-                if (!profileFileName.equals("")) {
-                    InputStream in = null;
-                    try {
-                        ProfileParser profileParser = new ProfileParser(false);
-                        in = new FileInputStream(Hl7Constants.DEFAULT_PATH + profileFileName);
-                        String file = Hl7Utils.streamToString(in);
-                        conformanceProfile = profileParser.parse(file);
-                    } catch (ProfileException e) {
-                        throw new SiddhiAppCreationException("The given conformance Profile file is not supported." +
-                                " Hence, dropping the profile validation. " + e);
-                    } catch (IOException e) {
-                        throw new SiddhiAppCreationException("Failed to load the given conformance profile file. " +
-                                "Hence, dropping the profile validation. ", e);
-                    } finally {
-                        if (in != null) {
-                            try {
-                                in.close();
-                            } catch (IOException e) {
-                                log.error(e);
-                            }
+        if (conformanceProfileUsed) {
+            if (!profileFileName.equals("")) {
+                InputStream in = null;
+                try {
+                    ProfileParser profileParser = new ProfileParser(false);
+                    in = new FileInputStream(Hl7Constants.DEFAULT_PATH + profileFileName);
+                    String file = Hl7Utils.streamToString(in);
+                    conformanceProfile = profileParser.parse(file);
+                } catch (ProfileException e) {
+                    throw new SiddhiAppCreationException("The given conformance Profile file is not supported." +
+                            " Hence, dropping the profile validation. " + e);
+                } catch (IOException e) {
+                    throw new SiddhiAppCreationException("Failed to load the given conformance profile file. " +
+                            "Hence, dropping the profile validation. ", e);
+                } finally {
+                    if (in != null) {
+                        try {
+                            in.close();
+                        } catch (IOException e) {
+                            log.error(e);
                         }
                     }
-                } else {
-                    throw new SiddhiAppCreationException("Empty field has been found in " +
-                            "hl7.conformance.profile.file.name defined in " + sourceEventListener + ", Please" +
-                            " prefer your file name. Hence, dropping the validation.");
                 }
+            } else {
+                throw new SiddhiAppCreationException("Empty field has been found in " +
+                        "hl7.conformance.profile.file.name defined in " + sourceEventListener + ", Please" +
+                        " prefer your file name. Hence, dropping the validation.");
             }
-            hl7Service = hapiContext.newServer(port, tlsEnabled);
-            try {
-                hl7Service.startAndWait();
-            } catch (InterruptedException e) {
-                throw new ConnectionUnavailableException("Error occurred while starting the server: ", e);
-            }
-            hl7Service.registerApplication(new RegistrationEventRouting(), new Hl7ReceivingApp(sourceEventListener,
-                    hl7Encoding, hl7AckEncoding, hapiContext, conformanceProfileUsed, conformanceProfile));
-            hl7Service.setExceptionHandler(new Hl7ExceptionHandler());
+        }
+        hl7Service = hapiContext.newServer(port, tlsEnabled);
+        try {
+            hl7Service.startAndWait();
+        } catch (InterruptedException e) {
+            throw new ConnectionUnavailableException("Error occurred while starting the server: ", e);
+        }
+        hl7Service.registerApplication(new RegistrationEventRouting(), new Hl7ReceivingApp(sourceEventListener,
+                hl7Encoding, hl7AckEncoding, hapiContext, conformanceProfileUsed, conformanceProfile));
+        hl7Service.setExceptionHandler(new Hl7ExceptionHandler());
     }
 
     @Override
@@ -308,7 +307,5 @@ public class Hl7Source extends Source {
     public void restoreState(Map<String, Object> map) {
         //No state to restore
     }
-
-
 
 }

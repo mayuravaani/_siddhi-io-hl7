@@ -63,10 +63,10 @@ import java.util.concurrent.TimeUnit;
 @Extension(
         name = "hl7",
         namespace = "sink",
-        description = "The hl7 sink publishes the hl7 messages to the hl7 receiver using MLLP protocol.",
+        description = "The hl7 sink publishes the hl7 messages using MLLP protocol.",
         parameters = {
                 @Parameter(name = "uri",
-                        description = "The URI that used to connect to an HL7 Server.\n " +
+                        description = "The URI that used to connect to a HL7 Server.\n " +
                                 "e.g.,\n" +
                                 "`{hostname}:{port}`, \n" +
                                 "`hl7://{hostname}:{port}` \n" +
@@ -74,8 +74,8 @@ import java.util.concurrent.TimeUnit;
                         type = {DataType.STRING}),
 
                 @Parameter(name = "hl7.encoding",
-                        description = "Encoding method of hl7. This can be er7 or xml. You should define hl7 " +
-                                "encoding type according to their input.\n" +
+                        description = "Encoding method of hl7. This can be er7 or xml. User should define hl7 " +
+                                "encoding type according to the input.\n" +
                                 "e.g.,\n" +
                                 "If the transmitting message is in `er7`(text) format then the encoding type should" +
                                 " be `er7`.\n" +
@@ -128,8 +128,7 @@ import java.util.concurrent.TimeUnit;
                 @Example(
                         syntax = "@App:name('Hl7TestAppForER7') \n" +
                                 "@sink(type = 'hl7', \n" +
-                                "host.name = 'localhost', \n" +
-                                "port = 1080, \n" +
+                                "uri = 'localhost:1080', \n" +
                                 "hl7.encoding = 'er7', \n" +
                                 "@map(type = 'text')) \n" +
                                 "define stream hl7stream(payload string);\n"
@@ -140,8 +139,7 @@ import java.util.concurrent.TimeUnit;
                 @Example(
                         syntax = "@App:name('Hl7TestAppForXML') \n" +
                                 "@sink(type = 'hl7', \n" +
-                                "host.name = 'localhost',\n" +
-                                "port = 1080, \n" +
+                                "uri = 'localhost:1080', \n" +
                                 "hl7.encoding = 'xml', \n" +
                                 "@map(type = 'xml', enclosing.element=\"<ADT_A01  xmlns='urn:hl7-org:v2xml'>\", " +
                                 "@payload('<MSH><MSH.1>{{MSH1}}</MSH.1><MSH.2>{{MSH2}}</MSH.2><MSH.3><HD.1>" +
@@ -216,7 +214,7 @@ public class Hl7Sink extends Sink {
     public void publish(Object payload, DynamicOptions dynamicOptions) {
 
         Initiator initiator = connection.getInitiator();
-        String payload1 = (String) payload;
+        String payLoad = (String) payload;
         Parser pipeParser = hapiContext.getPipeParser();
         Parser xmlParser = hapiContext.getXMLParser();
         initiator.setTimeout(hl7Timeout, TimeUnit.MILLISECONDS);
@@ -224,13 +222,13 @@ public class Hl7Sink extends Sink {
         try {
             Message message;
             if (hl7Encoding.toUpperCase(Locale.ENGLISH).equals("ER7")) {
-                message = pipeParser.parse(payload1);
+                message = pipeParser.parse(payLoad);
             } else {
-                message = xmlParser.parse(payload1);
+                message = xmlParser.parse(payLoad);
             }
             response = initiator.sendAndReceive(message);
             try {
-                String responseString = null;
+                String responseString;
                 if (hl7AckEncoding.toUpperCase(Locale.ENGLISH).equals("ER7")) {
                     responseString = pipeParser.encode(response);
                 } else {

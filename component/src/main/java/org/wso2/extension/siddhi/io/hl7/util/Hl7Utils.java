@@ -33,6 +33,12 @@ import java.util.Locale;
  */
 public class Hl7Utils {
 
+    /**
+     * Handles Validation Exceptions for uri.
+     *
+     * @param uri              - uri that is used to connect the server
+     * @param siddhiStreamName - defined stream id
+     */
     public static int getValuesFromURI(String uri, String siddhiStreamName) {
 
         String[] separator = uri.split(":");
@@ -64,6 +70,13 @@ public class Hl7Utils {
         }
     }
 
+    /**
+     * Handles Validation Exceptions for hl7 Encoding types.
+     *
+     * @param hl7Encoding      - Encoding type of hl7 receiving message
+     * @param hl7AckEncoding   - Encoding type of hl7 acknowledgement message
+     * @param siddhiStreamName - defined stream id
+     */
     public static void validateEncodingType(String hl7Encoding, String hl7AckEncoding, String siddhiStreamName) {
 
         if (!(hl7Encoding.toUpperCase(Locale.ENGLISH).equals("ER7") ||
@@ -80,6 +93,12 @@ public class Hl7Utils {
         }
     }
 
+    /**
+     * Used to parse the inputStream to String type
+     *
+     * @param in fileInputStream
+     * @return String type of inputStream
+     */
     public static String streamToString(InputStream in) throws IOException {
 
         ByteBuffer buffer = ByteBuffer.wrap(IOUtils.readInputStreamIntoByteArray(in));
