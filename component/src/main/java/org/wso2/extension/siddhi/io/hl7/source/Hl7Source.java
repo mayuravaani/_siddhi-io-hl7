@@ -133,7 +133,7 @@ import java.util.Map;
                                 "@source (type = 'hl7', \n" +
                                 "port = '1080', \n" +
                                 "hl7.encoding = 'er7', \n" +
-                                "@map(type = 'text'))" +
+                                "@map(type = 'text'))\n" +
                                 "define stream hl7stream(payload string);\n"
                         ,
                         description = "This receives the HL7 messages using the MLLP protocol" +
