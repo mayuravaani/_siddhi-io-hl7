@@ -113,7 +113,7 @@ public class Hl7ReceivingApp implements ReceivingApplication {
         }
         if (hl7AckType.toUpperCase(Locale.ENGLISH).equals("ER7")) {
             String er7AckMsg = pipeParser.encode(ackMsg);
-            er7AckMsg = er7AckMsg.replaceAll("\\r", "\n");
+            er7AckMsg = er7AckMsg.replaceAll("\r", "\n");
             log.info("Sent Acknowledgement: \n" + er7AckMsg);
         } else {
             String xmlAckMsg = xmlParser.encode(ackMsg);

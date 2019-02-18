@@ -199,7 +199,7 @@ define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string
     </tr>
     <tr>
         <td style="vertical-align: top">hl7.conformance.profile.file.name</td>
-        <td style="vertical-align: top; word-wrap: break-word">The conformance profile file that is used to validate the incoming message. User should store the file with in the <code>${carbon.home}/resources/security</code> directory. If the given file is invalid, then that will not be used in validation.</td>
+        <td style="vertical-align: top; word-wrap: break-word">The conformance profile file that is used to validate the incoming message. User should store the file within the <code>${carbon.home}/resources/security</code> directory. If the given file is invalid, then that will not be used in validation.</td>
         <td style="vertical-align: top">Empty</td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">Yes</td>
@@ -211,18 +211,18 @@ define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span>
 ```
 @App:name ('Hl7TestAppForTextMapping') 
-@source ( type = 'hl7', 
+@source (type = 'hl7', 
 port = 1080, 
 hl7.encoding = 'er7', 
-@map(type = 'text', @payload("{{payload}}")))define stream hl7stream(payload string);
+@map(type = 'text'))define stream hl7stream(payload string);
 
 ```
 <p style="word-wrap: break-word">This receives the HL7 messages using the MLLP protocol and send the acknowledgement message to the client.<br>&nbsp;</p>
 
 <span id="example-2" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 2</span>
 ```
-@App:name ('Hl7TestAppForTextMapping') 
-@source ( type = 'hl7', 
+@App:name ('Hl7TestAppForXMLtMapping') 
+@source (type = 'hl7', 
 port = 1080, 
 hl7.encoding = 'xml', 
 @map (type = 'xml', namespaces = 'ns=urn:hl7-org:v2xml', @attributes(MSH10 = "ns:MSH/ns:MSH.10", MSH3HD1 = "ns:MSH/ns:MSH.3/ns:HD.1")))
