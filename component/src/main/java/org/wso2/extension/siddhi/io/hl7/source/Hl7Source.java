@@ -130,10 +130,10 @@ import java.util.Map;
         examples = {
                 @Example(
                         syntax = "@App:name ('Hl7TestAppForTextMapping') \n" +
-                                "@source ( type = 'hl7', \n" +
+                                "@source (type = 'hl7', \n" +
                                 "port = 1080, \n" +
                                 "hl7.encoding = 'er7', \n" +
-                                "@map(type = 'text', @payload(\"{{payload}}\")))" +
+                                "@map(type = 'text'))" +
                                 "define stream hl7stream(payload string);\n"
                         ,
                         description = "This receives the HL7 messages using the MLLP protocol" +
@@ -141,7 +141,7 @@ import java.util.Map;
                 ),
                 @Example(
                         syntax = "@App:name ('Hl7TestAppForXMLtMapping') \n" +
-                                "@source ( type = 'hl7', \n" +
+                                "@source (type = 'hl7', \n" +
                                 "port = 1080, \n" +
                                 "hl7.encoding = 'xml', \n" +
                                 "@map (type = 'xml', namespaces = 'ns=urn:hl7-org:v2xml', @attributes(" +
