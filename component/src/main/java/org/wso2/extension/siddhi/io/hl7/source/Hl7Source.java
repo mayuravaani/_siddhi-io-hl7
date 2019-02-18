@@ -131,7 +131,7 @@ import java.util.Map;
                 @Example(
                         syntax = "@App:name ('Hl7TestAppForTextMapping') \n" +
                                 "@source (type = 'hl7', \n" +
-                                "port = 1080, \n" +
+                                "port = '1080', \n" +
                                 "hl7.encoding = 'er7', \n" +
                                 "@map(type = 'text'))" +
                                 "define stream hl7stream(payload string);\n"
@@ -142,7 +142,7 @@ import java.util.Map;
                 @Example(
                         syntax = "@App:name ('Hl7TestAppForXMLtMapping') \n" +
                                 "@source (type = 'hl7', \n" +
-                                "port = 1080, \n" +
+                                "port = '1080', \n" +
                                 "hl7.encoding = 'xml', \n" +
                                 "@map (type = 'xml', namespaces = 'ns=urn:hl7-org:v2xml', @attributes(" +
                                 "MSH10 = \"ns:MSH/ns:MSH.10\", MSH3HD1 = \"ns:MSH/ns:MSH.3/ns:HD.1\")))\n" +
