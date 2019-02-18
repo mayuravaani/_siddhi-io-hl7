@@ -16,7 +16,6 @@
  *  under the License.
  *
  */
-
 package org.wso2.extension.siddhi.io.hl7.util;
 
 import ca.uhn.hl7v2.hoh.util.IOUtils;

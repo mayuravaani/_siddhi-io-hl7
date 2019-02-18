@@ -16,7 +16,6 @@
  *  under the License.
  *
  */
-
 package org.wso2.extension.siddhi.io.hl7.sink;
 
 import ca.uhn.hl7v2.HL7Exception;
@@ -194,7 +193,7 @@ public class TestCaseOfHl7Sink {
                 "MSH9CM_MSG2 string,MSH10 string,MSH11PT1 string,MSH12 string);  ";
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);
         InputHandler stream = siddhiAppRuntime.getInputHandler("hl7stream");
-         hl7SinkTestUtil.connect(5011, count, eventArrived, false, 1);
+        hl7SinkTestUtil.connect(5011, count, eventArrived, false, 1);
         siddhiAppRuntime.start();
         try {
             stream.send(new Object[]{"|", "^~\\&amp;", "20190122111442.228+0530", "ORM", "O01", "Q2336101",

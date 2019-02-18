@@ -16,7 +16,6 @@
  *  under the License.
  *
  */
-
 package org.wso2.extension.siddhi.io.hl7.source;
 
 import ca.uhn.hl7v2.DefaultHapiContext;
@@ -122,7 +121,7 @@ import java.util.Map;
 
                 @Parameter(name = "hl7.conformance.profile.file.name",
                         description = "The conformance profile file that is used to validate the incoming " +
-                                "message. User should store the file with in the `${carbon.home}/resources/security` " +
+                                "message. User should store the file within the `${carbon.home}/resources/security` " +
                                 "directory. If the given file is invalid, then that will not be used in validation.",
                         optional = true, defaultValue = "Empty",
                         type = {DataType.STRING})
@@ -141,7 +140,7 @@ import java.util.Map;
                                 " and send the acknowledgement message to the client.\n "
                 ),
                 @Example(
-                        syntax = "@App:name ('Hl7TestAppForTextMapping') \n" +
+                        syntax = "@App:name ('Hl7TestAppForXMLtMapping') \n" +
                                 "@source ( type = 'hl7', \n" +
                                 "port = 1080, \n" +
                                 "hl7.encoding = 'xml', \n" +

@@ -16,7 +16,6 @@
  *  under the License.
  *
  */
-
 package org.wso2.extension.siddhi.io.hl7.source;
 
 import ca.uhn.hl7v2.protocol.ApplicationRouter;

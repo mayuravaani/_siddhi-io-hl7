@@ -16,7 +16,6 @@
  *  under the License.
  *
  */
-
 package org.wso2.extension.siddhi.io.hl7.sink;
 
 import ca.uhn.hl7v2.HL7Exception;
@@ -43,6 +42,7 @@ public class TestCaseOfHl7SinkForTls {
     private PipeParser pipeParser = new PipeParser();
     private MshGenerator mshGenerator = new MshGenerator();
     private Hl7SinkTestUtil hl7SinkTestUtil;
+
     @BeforeMethod
     public void initBeforeMethod() {
 

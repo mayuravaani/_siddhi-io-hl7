@@ -16,7 +16,6 @@
  *  under the License.
  *
  */
-
 package org.wso2.extension.siddhi.io.hl7.source;
 
 import ca.uhn.hl7v2.HL7Exception;
@@ -58,14 +57,15 @@ public class Hl7ReceivingApp implements ReceivingApplication {
     public Hl7ReceivingApp() {
 
     }
+
     /**
      * Handles Processing of the Receiving Messages.
      *
-     * @param hapiContext - context that is used to configure the Hapi core services
-     * @param hl7EncodeType - Encoding type of hl7 receiving message
-     * @param hl7AckType - Encoding type of hl7 acknowledgement message
-     * @param conformanceUsed - Conformance profile is used or not
-     * @param conformanceProfile - Conformance profile file name
+     * @param hapiContext         - context that is used to configure the Hapi core services
+     * @param hl7EncodeType       - Encoding type of hl7 receiving message
+     * @param hl7AckType          - Encoding type of hl7 acknowledgement message
+     * @param conformanceUsed     - Conformance profile is used or not
+     * @param conformanceProfile  - Conformance profile file name
      * @param sourceEventListener - listens events
      */
     public Hl7ReceivingApp(SourceEventListener sourceEventListener, String hl7EncodeType, String hl7AckType,
@@ -115,7 +115,7 @@ public class Hl7ReceivingApp implements ReceivingApplication {
             String er7AckMsg = pipeParser.encode(ackMsg);
             er7AckMsg = er7AckMsg.replaceAll("\\r", "\n");
             log.info("Sent Acknowledgement: \n" + er7AckMsg);
-        } else  {
+        } else {
             String xmlAckMsg = xmlParser.encode(ackMsg);
             log.info("Sent Acknowledgement: \n" + xmlAckMsg);
         }
