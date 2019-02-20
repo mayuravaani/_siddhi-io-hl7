@@ -259,8 +259,9 @@ public class Hl7Sink extends Sink {
                 throw new HL7Exception("Error occurred while encoding the Received ACK Message into String", e);
             }
         } catch (Exception e) {
-            log.error("Error occurred while sending the message" + e);
-            throw new Hl7SinkAdaptorRuntimeException("Error occurred while sending the message", e);
+            log.error("Error occurred while sending the message for stream: " + streamDefinition.getId() + ": " + e);
+            throw new Hl7SinkAdaptorRuntimeException("Error occurred while sending the message for stream: " +
+                    streamDefinition.getId() + ": ", e);
         }
     }
 
@@ -281,16 +282,18 @@ public class Hl7Sink extends Sink {
                 hapiContext.setSocketFactory(new HapiSocketTlsFactoryWrapper(tlsFac));
             } catch (FileNotFoundException e) {
                 throw new SiddhiAppCreationException("Failed to found the keystore file. Please check the " +
-                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " + streamDefinition, e);
+                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " +
+                        streamDefinition.getId(), e);
             } catch (IOException e) {
                 throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
-                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " + streamDefinition, e);
+                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " +
+                        streamDefinition.getId(), e);
             } catch (CertificateException | NoSuchAlgorithmException e) {
                 throw new SiddhiAppCreationException("Failed to load keystore. please check the keystore " +
                         "defined in" + streamDefinition, e);
             } catch (KeyStoreException e) {
                 throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
-                        "tls.keystore.type = " + tlsKeystoreType + "  defined in " + streamDefinition, e);
+                        "tls.keystore.type = " + tlsKeystoreType + "  defined in " + streamDefinition.getId(), e);
             }
         }
         try {
@@ -298,7 +301,7 @@ public class Hl7Sink extends Sink {
             log.info("Executing HL7Sender : HOST : " + hostName + " PORT : " + port);
         } catch (HL7Exception e) {
             throw new ConnectionUnavailableException("Failed to connect with the HL7 server, check " +
-                    "the host.name = " + hostName + ", port = " + port + " defined in " + streamDefinition, e);
+                    "the host.name = " + hostName + ", port = " + port + " defined in " + streamDefinition.getId(), e);
         }
     }
 

@@ -16,7 +16,6 @@
  *  under the License.
  *
  */
-
 package org.wso2.extension.siddhi.io.hl7.sink.exception;
 
 /**
@@ -25,10 +24,12 @@ package org.wso2.extension.siddhi.io.hl7.sink.exception;
 public class Hl7SinkAdaptorRuntimeException extends RuntimeException {
 
     public Hl7SinkAdaptorRuntimeException(String message) {
+
         super(message);
     }
 
     public Hl7SinkAdaptorRuntimeException(String message, Throwable cause) {
+
         super(message, cause);
     }
 

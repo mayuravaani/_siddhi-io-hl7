@@ -291,10 +291,10 @@ public class TestCaseOfHl7SinkForTls {
     }
 
     @Test(expectedExceptions = SiddhiAppCreationException.class)
-    public void hl7PublisherTestForWrongKeyStore() {
+    public void hl7PublisherTestForWrongKeyStoreType() {
 
         log.info("---------------------------------------------------------------------------------------------");
-        log.info("hl7 source test for enabling tls - invalid file");
+        log.info("hl7 source test for enabling tls - invalid keystore type");
         log.info("---------------------------------------------------------------------------------------------");
         SiddhiManager siddhiManager = new SiddhiManager();
         String siddhiApp = "@App:name('TestExecutionPlan')\n" +

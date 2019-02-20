@@ -177,7 +177,6 @@ public class Hl7Source extends Source {
     private RuntimeProfile conformanceProfile;
     private String tlsKeystoreType;
 
-
     @Override
     public void init(SourceEventListener sourceEventListener, OptionHolder optionHolder,
                      String[] requestedTransportPropertyNames, ConfigReader configReader,
@@ -235,17 +234,17 @@ public class Hl7Source extends Source {
             } catch (FileNotFoundException e) {
                 throw new SiddhiAppCreationException("Failed to found the keystore file. Please check the " +
                         "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " +
-                        sourceEventListener.getStreamDefinition(), e);
+                        sourceEventListener.getStreamDefinition().getId(), e);
             } catch (IOException e) {
                 throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
                         "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " +
-                        sourceEventListener.getStreamDefinition(), e);
+                        sourceEventListener.getStreamDefinition().getId(), e);
             } catch (CertificateException | NoSuchAlgorithmException e) {
                 throw new SiddhiAppCreationException("Failed to load keystore. please check the keystore " +
-                        "defined in" + sourceEventListener.getStreamDefinition(), e);
+                        "defined in" + sourceEventListener.getStreamDefinition().getId(), e);
             } catch (KeyStoreException e) {
                 throw new SiddhiAppCreationException("Failed to load keystore. Please check the tls.keystore.type = " +
-                        tlsKeystoreType + "  defined in " + sourceEventListener.getStreamDefinition(), e);
+                        tlsKeystoreType + "  defined in " + sourceEventListener.getStreamDefinition().getId(), e);
             }
         }
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -253,7 +252,8 @@ public class Hl7Source extends Source {
         try {
             hl7Service.startAndWait();
         } catch (InterruptedException e) {
-            throw new ConnectionUnavailableException("Error occurred while starting the server: ", e);
+            throw new ConnectionUnavailableException("Error occurred while starting the server on port: " + port
+                    + ", ", e);
         }
         hl7Service.registerApplication(new RegistrationEventRouting(), new Hl7ReceivingApp(sourceEventListener,
                 hl7Encoding, hl7AckEncoding, hapiContext, conformanceProfileUsed, conformanceProfile));
@@ -298,20 +298,22 @@ public class Hl7Source extends Source {
     }
 
     private RuntimeProfile getConformanceProfile(String profileFileName) {
+
         if (!profileFileName.equals("")) {
             InputStream in = null;
             try {
                 ProfileParser profileParser = new ProfileParser(false);
                 in = new FileInputStream(Hl7Constants.DEFAULT_PATH + profileFileName);
                 String file = Hl7Utils.streamToString(in);
-                //conformanceProfile = profileParser.parse(file);
                 return profileParser.parse(file);
             } catch (ProfileException e) {
-                throw new SiddhiAppCreationException("The given conformance Profile file is not supported." +
+                throw new SiddhiAppCreationException("The conformance Profile file given in" +
+                        sourceEventListener.getStreamDefinition().getId() +" is not supported." +
                         " Hence, dropping the profile validation. " + e);
             } catch (IOException e) {
-                throw new SiddhiAppCreationException("Failed to load the given conformance profile file. " +
-                        "Hence, dropping the profile validation. ", e);
+                throw new SiddhiAppCreationException("Failed to load the given conformance profile file given in " +
+                        sourceEventListener.getStreamDefinition().getId() + " Hence, dropping the profile " +
+                        "validation. ", e);
             } finally {
                 if (in != null) {
                     try {
@@ -322,8 +324,8 @@ public class Hl7Source extends Source {
                 }
             }
         } else {
-            throw new SiddhiAppCreationException("Empty field has been found in " +
-                    "hl7.conformance.profile.file.name defined in " + sourceEventListener.getStreamDefinition() +
+            throw new SiddhiAppCreationException("Empty field has been found in hl7.conformance.profile.file.name " +
+                    "defined in " + sourceEventListener.getStreamDefinition().getId() +
                     ", Please prefer your file name. Hence, dropping the validation.");
         }
     }

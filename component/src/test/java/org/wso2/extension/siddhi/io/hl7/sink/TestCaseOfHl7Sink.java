@@ -681,10 +681,10 @@ public class TestCaseOfHl7Sink {
     }
 
     @Test
-    public void hl7PudblishTestER7() throws InterruptedException {
+    public void hl7PublishTestInputMessageWrongFormat() throws InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
-        log.info("hl7 Sink test with ER7 format message - multiple messages and different Message Types.");
+        log.info("hl7 Sink test with ER7 format message - Input message format is invalid.");
         log.info("---------------------------------------------------------------------------------------------");
         log = Logger.getLogger(Hl7Sink.class);
         UnitTestAppender appender = new UnitTestAppender();

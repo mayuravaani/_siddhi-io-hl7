@@ -16,7 +16,6 @@
  *  under the License.
  *
  */
-
 package org.wso2.extension.siddhi.io.hl7.source.exception;
 
 /**
@@ -25,10 +24,12 @@ package org.wso2.extension.siddhi.io.hl7.source.exception;
 public class Hl7SourceAdaptorRuntimeException extends RuntimeException {
 
     public Hl7SourceAdaptorRuntimeException(String message) {
+
         super(message);
     }
 
     public Hl7SourceAdaptorRuntimeException(String message, Throwable cause) {
+
         super(message, cause);
     }
 

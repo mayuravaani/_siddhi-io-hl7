@@ -246,10 +246,10 @@ public class TestCaseOfHl7SourceForTls {
     }
 
     @Test(expectedExceptions = SiddhiAppCreationException.class)
-    public void dd() {
+    public void hl7ConsumerTestForInvalidKeystoreType() {
 
         log.info("---------------------------------------------------------------------------------------------");
-        log.info("hl7 source test for enabling tls - given passphrase is incorrect");
+        log.info("hl7 source test for enabling tls - invalid keystore type");
         log.info("---------------------------------------------------------------------------------------------");
         SiddhiManager siddhiManager = new SiddhiManager();
         String siddhiApp = "@App:name('TestExecutionPlan')\n" +
