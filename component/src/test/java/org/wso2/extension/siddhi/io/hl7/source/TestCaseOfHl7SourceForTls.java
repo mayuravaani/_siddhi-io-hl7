@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.wso2.extension.siddhi.io.hl7.util.MshGenerator;
+import org.wso2.extension.siddhi.io.hl7.util.TestUtil;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
@@ -44,7 +44,7 @@ public class TestCaseOfHl7SourceForTls {
     private volatile boolean eventArrived;
     private List<String> receivedEvent;
     private PipeParser pipeParser = new PipeParser();
-    private MshGenerator mshGenerator = new MshGenerator();
+    private TestUtil testUtil = new TestUtil();
 
     @BeforeMethod
     private void setUP() {
@@ -106,8 +106,8 @@ public class TestCaseOfHl7SourceForTls {
         stream.send(new Object[]{payLoadER72});
         Thread.sleep(10000);
         List<String> expected = new ArrayList<>(2);
-        expected.add(mshGenerator.getControlID(pipeParser.parse(payLoadER71)));
-        expected.add(mshGenerator.getControlID(pipeParser.parse(payLoadER72)));
+        expected.add(testUtil.getControlID(pipeParser.parse(payLoadER71)));
+        expected.add(testUtil.getControlID(pipeParser.parse(payLoadER72)));
         AssertJUnit.assertEquals(2, count.get());
         AssertJUnit.assertTrue(eventArrived);
         AssertJUnit.assertEquals(expected, receivedEvent);
@@ -169,8 +169,8 @@ public class TestCaseOfHl7SourceForTls {
         stream.send(new Object[]{payLoadER72});
         Thread.sleep(10000);
         List<String> expected = new ArrayList<>(2);
-        expected.add(mshGenerator.getControlID(pipeParser.parse(payLoadER71)));
-        expected.add(mshGenerator.getControlID(pipeParser.parse(payLoadER72)));
+        expected.add(testUtil.getControlID(pipeParser.parse(payLoadER71)));
+        expected.add(testUtil.getControlID(pipeParser.parse(payLoadER72)));
         AssertJUnit.assertEquals(2, count.get());
         AssertJUnit.assertTrue(eventArrived);
         AssertJUnit.assertEquals(expected, receivedEvent);
@@ -237,6 +237,29 @@ public class TestCaseOfHl7SourceForTls {
                 "tls.enabled = 'true',\n" +
                 "tls.keystore.filepath = 'src/test/resources/security/keystore.jks', " +
                 "tls.keystore.passphrase = 'changeitrr', " +
+                "@map (type = 'xml', namespaces='ns=urn:hl7-org:v2xml', @attributes(MSH10 = \"ns:MSH/ns:MSH.10\"," +
+                "MSH3HD1 = \"ns:MSH/ns:MSH.3/ns:HD.1\")))\n" +
+                "define stream hl7stream (MSH10 string, MSH3HD1 string);\n";
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);
+        siddhiAppRuntime.start();
+        siddhiAppRuntime.shutdown();
+    }
+
+    @Test(expectedExceptions = SiddhiAppCreationException.class)
+    public void dd() {
+
+        log.info("---------------------------------------------------------------------------------------------");
+        log.info("hl7 source test for enabling tls - given passphrase is incorrect");
+        log.info("---------------------------------------------------------------------------------------------");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String siddhiApp = "@App:name('TestExecutionPlan')\n" +
+                "@source ( type = 'hl7',\n" +
+                "port = '5046',\n" +
+                "hl7.encoding = 'xml',\n" +
+                "tls.enabled = 'true',\n" +
+                "tls.keystore.type = 's', " +
+                "tls.keystore.filepath = 'src/test/resources/security/keystore.jks', " +
+                "tls.keystore.passphrase = 'changeit', " +
                 "@map (type = 'xml', namespaces='ns=urn:hl7-org:v2xml', @attributes(MSH10 = \"ns:MSH/ns:MSH.10\"," +
                 "MSH3HD1 = \"ns:MSH/ns:MSH.3/ns:HD.1\")))\n" +
                 "define stream hl7stream (MSH10 string, MSH3HD1 string);\n";

@@ -8,7 +8,7 @@
 
 <span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span>
 ```
-@sink(type="hl7", uri="<STRING>", hl7.encoding="<STRING>", hl7.ack.encoding="<STRING>", charset="<STRING>", tls.enabled="<BOOL>", tls.keystore.filepath="<STRING>", tls.keystore.passphrase="<STRING>", hl7.timeout="<INT>", @map(...)))
+@sink(type="hl7", uri="<STRING>", hl7.encoding="<STRING>", hl7.ack.encoding="<STRING>", charset="<STRING>", tls.enabled="<BOOL>", tls.keystore.type="<STRING>", tls.keystore.filepath="<STRING>", tls.keystore.passphrase="<STRING>", hl7.timeout="<INT>", @map(...)))
 ```
 
 <span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
@@ -62,8 +62,16 @@
         <td style="vertical-align: top">No</td>
     </tr>
     <tr>
+        <td style="vertical-align: top">tls.keystore.type</td>
+        <td style="vertical-align: top; word-wrap: break-word">The passphrase for the keystore. A custom keystore type can be specified if required. If no custom passphrase is specified, then the system uses <code>JKS</code> as the default keystore type.</td>
+        <td style="vertical-align: top">jks</td>
+        <td style="vertical-align: top">STRING</td>
+        <td style="vertical-align: top">Yes</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
         <td style="vertical-align: top">tls.keystore.filepath</td>
-        <td style="vertical-align: top; word-wrap: break-word">The file path to the location of the keystore of the client that sendsthe HL7 events via the <code>MLLP</code> protocol. A custom keystore can bespecified if required. If a custom keystore is not specified, then the systemuses the default <code>wso2carbon</code> keystore in the <code>${carbon.home}/resources/security</code> directory.</td>
+        <td style="vertical-align: top; word-wrap: break-word">The file path to the location of the keystore of the client that sends the HL7 events via the <code>MLLP</code> protocol. A custom keystore can be specified if required. If a custom keystore is not specified, then the system uses the default <code>wso2carbon</code> keystore in the <code>${carbon.home}/resources/security</code> directory.</td>
         <td style="vertical-align: top">${carbon.home}/resources/security/wso2carbon.jks</td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">Yes</td>
@@ -71,7 +79,7 @@
     </tr>
     <tr>
         <td style="vertical-align: top">tls.keystore.passphrase</td>
-        <td style="vertical-align: top; word-wrap: break-word">The passphrase for the keystore. A custom passphrase can be specifiedif required. If no custom passphrase is specified, then the system uses<code>wso2carbon</code> as the default passphrase.</td>
+        <td style="vertical-align: top; word-wrap: break-word">The passphrase for the keystore. A custom passphrase can be specified if required. If no custom passphrase is specified, then the system uses <code>wso2carbon</code> as the default passphrase.</td>
         <td style="vertical-align: top">wso2carbon</td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">Yes</td>
@@ -94,11 +102,11 @@
 @sink(type = 'hl7', 
 uri = 'localhost:1080', 
 hl7.encoding = 'er7', 
-@map(type = 'text')) 
+@map(type = 'text', @payload("{{payload}}"))) 
 define stream hl7stream(payload string);
 
 ```
-<p style="word-wrap: break-word">This publishes the HL7 messages in ER7 format using MLLP protocol and receives and logs the acknowledgement message.<br>&nbsp;</p>
+<p style="word-wrap: break-word">This publishes the HL7 messages in ER7 format using MLLP protocol and receives and logs the acknowledgement message in the console. It uses custom text mapping.<br>&nbsp;</p>
 
 <span id="example-2" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 2</span>
 ```
@@ -110,7 +118,7 @@ hl7.encoding = 'xml',
 define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string, MSH5HD1 string, MSH6HD1 string, MSH7 string, MSH8 string, CM_MSG1 string, CM_MSG2 string,MSH10 string,MSH11 string, MSH12 string);
 
 ```
-<p style="word-wrap: break-word">This publishes the HL7 messages in XML format using MLLP protocol and receives and logs the acknowledgement message.<br>&nbsp;</p>
+<p style="word-wrap: break-word">This publishes the HL7 messages in XML format using MLLP protocol and receives and logs the acknowledgement message in the console. It uses custom xml mapping.<br>&nbsp;</p>
 
 ## Source
 
@@ -120,7 +128,7 @@ define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string
 
 <span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span>
 ```
-@source(type="hl7", port="<INT>", hl7.encoding="<STRING>", hl7.ack.encoding="<STRING>", charset="<STRING>", tls.enabled="<BOOL>", tls.keystore.filepath="<STRING>", tls.keystore.passphrase="<STRING>", hl7.conformance.profile.used="<BOOL>", hl7.conformance.profile.file.name="<STRING>", @map(...)))
+@source(type="hl7", port="<INT>", hl7.encoding="<STRING>", hl7.ack.encoding="<STRING>", charset="<STRING>", tls.enabled="<BOOL>", tls.keystore.filepath="<STRING>", tls.keystore.type="<STRING>", tls.keystore.passphrase="<STRING>", hl7.conformance.profile.used="<BOOL>", hl7.conformance.profile.file.name="<STRING>", @map(...)))
 ```
 
 <span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
@@ -182,6 +190,14 @@ define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string
         <td style="vertical-align: top">No</td>
     </tr>
     <tr>
+        <td style="vertical-align: top">tls.keystore.type</td>
+        <td style="vertical-align: top; word-wrap: break-word">The passphrase for the keystore. A custom keystore type can be specified if required. If no custom passphrase is specified, then the system uses <code>JKS</code> as the default keystore type.</td>
+        <td style="vertical-align: top">jks</td>
+        <td style="vertical-align: top">STRING</td>
+        <td style="vertical-align: top">Yes</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
         <td style="vertical-align: top">tls.keystore.passphrase</td>
         <td style="vertical-align: top; word-wrap: break-word">The passphrase for the keystore. A custom passphrase can be specifiedif required. If no custom passphrase is specified, then the system uses<code>wso2carbon</code> as the default passphrase.</td>
         <td style="vertical-align: top">wso2carbon</td>
@@ -212,22 +228,23 @@ define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string
 ```
 @App:name ('Hl7TestAppForTextMapping') 
 @source (type = 'hl7', 
-port = 1080, 
+port = '1080', 
 hl7.encoding = 'er7', 
-@map(type = 'text'))define stream hl7stream(payload string);
+@map(type = 'text'))
+define stream hl7stream(payload string);
 
 ```
-<p style="word-wrap: break-word">This receives the HL7 messages using the MLLP protocol and send the acknowledgement message to the client.<br>&nbsp;</p>
+<p style="word-wrap: break-word">This receives the HL7 messages using the MLLP protocol and send the acknowledgement message to the client. It uses text mapping.<br>&nbsp;</p>
 
 <span id="example-2" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 2</span>
 ```
 @App:name ('Hl7TestAppForXMLtMapping') 
 @source (type = 'hl7', 
-port = 1080, 
+port = '1080', 
 hl7.encoding = 'xml', 
 @map (type = 'xml', namespaces = 'ns=urn:hl7-org:v2xml', @attributes(MSH10 = "ns:MSH/ns:MSH.10", MSH3HD1 = "ns:MSH/ns:MSH.3/ns:HD.1")))
 define stream hl7stream (MSH10 string, MSH3HD1 string);
 
 ```
-<p style="word-wrap: break-word">This receives the HL7 messages using the MLLP protocol and send the acknowledgement message to the client.<br>&nbsp;</p>
+<p style="word-wrap: break-word">This receives the HL7 messages using the MLLP protocol and send the acknowledgement message to the client. It uses custom xml mapping.<br>&nbsp;</p>
 

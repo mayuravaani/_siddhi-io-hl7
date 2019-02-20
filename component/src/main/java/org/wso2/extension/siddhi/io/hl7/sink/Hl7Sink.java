@@ -26,11 +26,11 @@ import ca.uhn.hl7v2.app.Initiator;
 import ca.uhn.hl7v2.hoh.sockets.CustomCertificateTlsSocketFactory;
 import ca.uhn.hl7v2.hoh.util.HapiSocketTlsFactoryWrapper;
 import ca.uhn.hl7v2.hoh.util.KeystoreUtils;
-import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.llp.MinLowerLayerProtocol;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.parser.Parser;
 import org.apache.log4j.Logger;
+import org.wso2.extension.siddhi.io.hl7.sink.exception.Hl7SinkAdaptorRuntimeException;
 import org.wso2.extension.siddhi.io.hl7.util.Hl7Constants;
 import org.wso2.extension.siddhi.io.hl7.util.Hl7Utils;
 import org.wso2.siddhi.annotation.Example;
@@ -46,11 +46,11 @@ import org.wso2.siddhi.core.util.transport.DynamicOptions;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Locale;
 import java.util.Map;
@@ -101,18 +101,25 @@ import java.util.concurrent.TimeUnit;
                         optional = true, defaultValue = "false",
                         type = {DataType.BOOL}),
 
+                @Parameter(name = "tls.keystore.type",
+                        description = "The passphrase for the keystore. A custom keystore type can be specified " +
+                                "if required. If no custom passphrase is specified, then the system uses " +
+                                "`JKS` as the default keystore type.",
+                        optional = true, defaultValue = "jks",
+                        type = {DataType.STRING}),
+
                 @Parameter(name = "tls.keystore.filepath",
-                        description = "The file path to the location of the keystore of the client that sends" +
-                                "the HL7 events via the `MLLP` protocol. A custom keystore can be" +
-                                "specified if required. If a custom keystore is not specified, then the system" +
+                        description = "The file path to the location of the keystore of the client that sends " +
+                                "the HL7 events via the `MLLP` protocol. A custom keystore can be " +
+                                "specified if required. If a custom keystore is not specified, then the system " +
                                 "uses the default `wso2carbon` keystore in the `${carbon.home}/resources/security` " +
                                 "directory.",
                         optional = true, defaultValue = "${carbon.home}/resources/security/wso2carbon.jks",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "tls.keystore.passphrase",
-                        description = "The passphrase for the keystore. A custom passphrase can be specified" +
-                                "if required. If no custom passphrase is specified, then the system uses" +
+                        description = "The passphrase for the keystore. A custom passphrase can be specified " +
+                                "if required. If no custom passphrase is specified, then the system uses " +
                                 "`wso2carbon` as the default passphrase.",
                         optional = true, defaultValue = "wso2carbon",
                         type = {DataType.STRING}),
@@ -129,11 +136,12 @@ import java.util.concurrent.TimeUnit;
                                 "@sink(type = 'hl7', \n" +
                                 "uri = 'localhost:1080', \n" +
                                 "hl7.encoding = 'er7', \n" +
-                                "@map(type = 'text')) \n" +
+                                "@map(type = 'text', @payload(\"{{payload}}\"))) \n" +
                                 "define stream hl7stream(payload string);\n"
                         ,
                         description = "This publishes the HL7 messages in ER7 format using MLLP protocol " +
-                                "and receives and logs the acknowledgement message.\n "
+                                "and receives and logs the acknowledgement message in the console. It uses " +
+                                "custom text mapping.\n "
                 ),
                 @Example(
                         syntax = "@App:name('Hl7TestAppForXML') \n" +
@@ -152,7 +160,8 @@ import java.util.concurrent.TimeUnit;
                                 "CM_MSG2 string,MSH10 string,MSH11 string, MSH12 string);\n"
                         ,
                         description = "This publishes the HL7 messages in XML format using MLLP protocol " +
-                                "and receives and logs the acknowledgement message.\n "
+                                "and receives and logs the acknowledgement message in the console. It uses custom " +
+                                "xml mapping.\n "
                 )
         }
 )
@@ -160,7 +169,6 @@ import java.util.concurrent.TimeUnit;
 public class Hl7Sink extends Sink {
 
     private static final Logger log = Logger.getLogger(Hl7Sink.class);
-    private String uri;
     private boolean tlsEnabled;
     private String charset;
     private String hl7Encoding;
@@ -171,7 +179,9 @@ public class Hl7Sink extends Sink {
     private String tlsKeystoreFilepath;
     private String tlsKeystorePassphrase;
     private HapiContext hapiContext;
-    private int urlSeparation;
+    private String hostName;
+    private int port;
+    private String tlsKeystoreType;
 
     @Override
     public Class[] getSupportedInputEventClasses() {
@@ -190,7 +200,7 @@ public class Hl7Sink extends Sink {
                         SiddhiAppContext siddhiAppContext) {
 
         this.streamDefinition = streamDefinition;
-        this.uri = optionHolder.validateAndGetStaticValue(Hl7Constants.HL7_URI);
+        String uri = optionHolder.validateAndGetStaticValue(Hl7Constants.HL7_URI);
         this.hl7Encoding = optionHolder.validateAndGetStaticValue(Hl7Constants.HL7_ENCODING);
         this.charset = optionHolder.validateAndGetStaticValue(Hl7Constants.CHARSET_NAME,
                 Hl7Constants.DEFAULT_HL7_CHARSET);
@@ -204,9 +214,19 @@ public class Hl7Sink extends Sink {
                 Hl7Constants.DEFAULT_TLS_KEYSTORE_FILEPATH);
         this.tlsKeystorePassphrase = optionHolder.validateAndGetStaticValue(Hl7Constants.TLS_KEYSTORE_PASSPHRASE,
                 Hl7Constants.DEFAULT_TLS_KEYSTORE_PASSPHRASE);
+        this.tlsKeystoreType = optionHolder.validateAndGetStaticValue(Hl7Constants.TLS_KEYSTORE_TYPE,
+                Hl7Constants.DEFAULT_TLS_KEYSTORE_TYPE);
         this.hapiContext = new DefaultHapiContext();
-        urlSeparation = Hl7Utils.getValuesFromURI(uri, streamDefinition.getId());
+        int urlSeparation = Hl7Utils.getValuesFromURI(uri, streamDefinition.getId());
         Hl7Utils.validateEncodingType(hl7Encoding, hl7AckEncoding, streamDefinition.getId());
+        String[] separator = uri.split(":");
+        if (urlSeparation == 2) {
+            hostName = separator[0];
+            port = Integer.parseInt(separator[1]);
+        } else {
+            hostName = separator[1].replaceAll("/", "");
+            port = Integer.parseInt(separator[2]);
+        }
     }
 
     @Override
@@ -233,51 +253,47 @@ public class Hl7Sink extends Sink {
                 } else {
                     responseString = xmlParser.encode(response);
                 }
-                log.info("Received Response:\n" + responseString);
+                log.info("Received Response:\n" + responseString.replaceAll("\r", "\n"));
             } catch (HL7Exception e) {
+                ////////////////////////////////////////////////////////////////////////////////////////////
                 throw new HL7Exception("Error occurred while encoding the Received ACK Message into String", e);
             }
-        } catch (HL7Exception | LLPException | IOException e) {
-            log.error("Error occurred while sending the message." + e);
+        } catch (Exception e) {
+            log.error("Error occurred while sending the message" + e);
+            throw new Hl7SinkAdaptorRuntimeException("Error occurred while sending the message", e);
         }
     }
 
     @Override
     public void connect() throws ConnectionUnavailableException {
 
-        String[] separator = uri.split(":");
-        String hostName;
-        int port;
-        if (urlSeparation == 2) {
-            hostName = separator[0];
-            port = Integer.parseInt(separator[1]);
-        } else {
-            hostName = separator[1].replaceAll("/", "");
-            port = Integer.parseInt(separator[2]);
+        MinLowerLayerProtocol mllp = new MinLowerLayerProtocol();
+        mllp.setCharset(charset);
+        hapiContext.setLowerLayerProtocol(mllp);
+        if (tlsEnabled) {
+            try {
+
+                KeyStore keyStore = KeystoreUtils.loadKeystore(tlsKeystoreFilepath, tlsKeystorePassphrase);
+                KeyStore.getInstance(tlsKeystoreType);
+                KeystoreUtils.validateKeystoreForTlsSending(keyStore);
+                CustomCertificateTlsSocketFactory tlsFac = new CustomCertificateTlsSocketFactory(tlsKeystoreType,
+                        tlsKeystoreFilepath, tlsKeystorePassphrase);
+                hapiContext.setSocketFactory(new HapiSocketTlsFactoryWrapper(tlsFac));
+            } catch (FileNotFoundException e) {
+                throw new SiddhiAppCreationException("Failed to found the keystore file. Please check the " +
+                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " + streamDefinition, e);
+            } catch (IOException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
+                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " + streamDefinition, e);
+            } catch (CertificateException | NoSuchAlgorithmException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore. please check the keystore " +
+                        "defined in" + streamDefinition, e);
+            } catch (KeyStoreException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
+                        "tls.keystore.type = " + tlsKeystoreType + "  defined in " + streamDefinition, e);
+            }
         }
         try {
-            MinLowerLayerProtocol mllp = new MinLowerLayerProtocol();
-            mllp.setCharset(charset);
-            hapiContext.setLowerLayerProtocol(mllp);
-            if (tlsEnabled) {
-                try {
-                    KeyStore keyStore = KeystoreUtils.loadKeystore(tlsKeystoreFilepath, tlsKeystorePassphrase);
-                    KeystoreUtils.validateKeystoreForTlsSending(keyStore);
-                    CustomCertificateTlsSocketFactory tlsFac = new CustomCertificateTlsSocketFactory();
-                    tlsFac.setKeystoreFilename(tlsKeystoreFilepath);
-                    tlsFac.setKeystorePassphrase(tlsKeystorePassphrase);
-                    hapiContext.setSocketFactory(new HapiSocketTlsFactoryWrapper(tlsFac));
-
-                } catch (NoSuchAlgorithmException | CertificateException | KeyStoreException | IOException e) {
-                    if (e.getCause() instanceof UnrecoverableKeyException) {
-                        throw new SiddhiAppCreationException("Keystore password appears to be incorrect. Please " +
-                                "check the tls.keystore.passphrase defined in " + streamDefinition, e);
-                    } else {
-                        throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
-                                "tls.keystore.filepath defined in " + streamDefinition, e);
-                    }
-                }
-            }
             connection = hapiContext.newClient(hostName, port, tlsEnabled);
             log.info("Executing HL7Sender : HOST : " + hostName + " PORT : " + port);
         } catch (HL7Exception e) {

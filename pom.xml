@@ -39,6 +39,41 @@
                 <version>${siddhi.version}</version>
             </dependency>
             <dependency>
+                <groupId>ca.uhn.hapi</groupId>
+                <artifactId>hapi-base</artifactId>
+                <version>${hapi.base.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi</groupId>
+                <artifactId>hapi-structures-v24</artifactId>
+                <version>${hapi.structures.v24.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi</groupId>
+                <artifactId>hapi-structures-v251</artifactId>
+                <version>${hapi.structures.v251.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi</groupId>
+                <artifactId>hapi-structures-v22</artifactId>
+                <version>${hapi.structures.v22.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi</groupId>
+                <artifactId>hapi-structures-v25</artifactId>
+                <version>${hapi.structures.v25.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi</groupId>
+                <artifactId>hapi-structures-v23</artifactId>
+                <version>${hapi.structures.v23.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi</groupId>
+                <artifactId>hapi-hl7overhttp</artifactId>
+                <version>${hapi.hl7overhttp.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.log4j.wso2</groupId>
                 <artifactId>log4j</artifactId>
                 <version>${log4j.version}</version>
@@ -124,6 +159,13 @@
         <siddhi.map.text.version>1.0.22</siddhi.map.text.version>
         <siddhi.map.xml.version>4.0.21</siddhi.map.xml.version>
         <jacoco.plugin.version>0.7.9</jacoco.plugin.version>
+        <hapi.base.version>2.2</hapi.base.version>
+        <hapi.structures.v24.version>2.2</hapi.structures.v24.version>
+        <hapi.structures.v251.version>2.2</hapi.structures.v251.version>
+        <hapi.structures.v22.version>2.2</hapi.structures.v22.version>
+        <hapi.structures.v25.version>2.2</hapi.structures.v25.version>
+        <hapi.structures.v23.version>2.2</hapi.structures.v23.version>
+        <hapi.hl7overhttp.version>2.2</hapi.hl7overhttp.version>
         <carbon.feature.plugin.version>3.0.0</carbon.feature.plugin.version>
     </properties>
 </project>

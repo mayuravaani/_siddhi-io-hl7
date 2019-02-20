@@ -28,7 +28,7 @@ import org.testng.AssertJUnit;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.wso2.extension.siddhi.io.hl7.util.MshGenerator;
+import org.wso2.extension.siddhi.io.hl7.util.TestUtil;
 import org.wso2.extension.siddhi.io.hl7.util.UnitTestAppender;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
@@ -47,7 +47,7 @@ public class TestCaseOfHl7Sink {
     private static Logger log = Logger.getLogger(TestCaseOfHl7Sink.class);
     private PipeParser pipeParser = new PipeParser();
     private XMLParser xmlParser = new DefaultXMLParser();
-    private MshGenerator mshGenerator = new MshGenerator();
+    private TestUtil testUtil = new TestUtil();
 
     @BeforeMethod
     public void initBeforeMethod() {
@@ -112,9 +112,9 @@ public class TestCaseOfHl7Sink {
         eventArrived = hl7SinkTestUtil.getEventArrived();
         AssertJUnit.assertEquals(3, count);
         AssertJUnit.assertTrue(eventArrived);
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadER71Msg)));
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadER72Msg)));
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadER73Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadER71Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadER72Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadER73Msg)));
         siddhiAppRuntime.shutdown();
     }
 
@@ -167,8 +167,8 @@ public class TestCaseOfHl7Sink {
         eventArrived = hl7SinkTestUtil.getEventArrived();
         AssertJUnit.assertEquals(2, count);
         AssertJUnit.assertTrue(eventArrived);
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadXML1Msg)));
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadXML2Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadXML1Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadXML2Msg)));
         siddhiAppRuntime.shutdown();
 
     }
@@ -211,7 +211,7 @@ public class TestCaseOfHl7Sink {
         eventArrived = hl7SinkTestUtil.getEventArrived();
         AssertJUnit.assertEquals(1, count);
         AssertJUnit.assertTrue(eventArrived);
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadXMLMsg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadXMLMsg)));
         siddhiAppRuntime.shutdown();
 
     }
@@ -254,7 +254,7 @@ public class TestCaseOfHl7Sink {
         eventArrived = hl7SinkTestUtil.getEventArrived();
         AssertJUnit.assertEquals(1, count);
         AssertJUnit.assertTrue(eventArrived);
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadXMLMsg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadXMLMsg)));
         siddhiAppRuntime.shutdown();
     }
 
@@ -296,7 +296,7 @@ public class TestCaseOfHl7Sink {
         eventArrived = hl7SinkTestUtil.getEventArrived();
         AssertJUnit.assertEquals(1, count);
         AssertJUnit.assertTrue(eventArrived);
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadXMLMsg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadXMLMsg)));
         siddhiAppRuntime.shutdown();
     }
 
@@ -384,7 +384,7 @@ public class TestCaseOfHl7Sink {
         eventArrived = hl7SinkTestUtil.getEventArrived();
         AssertJUnit.assertEquals(1, count);
         AssertJUnit.assertTrue(eventArrived);
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadER7Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadER7Msg)));
         siddhiAppRuntime.shutdown();
     }
 
@@ -422,7 +422,7 @@ public class TestCaseOfHl7Sink {
         eventArrived = hl7SinkTestUtil.getEventArrived();
         AssertJUnit.assertEquals(1, count);
         AssertJUnit.assertTrue(eventArrived);
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadER7Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadER7Msg)));
         siddhiAppRuntime.shutdown();
     }
 
@@ -442,7 +442,7 @@ public class TestCaseOfHl7Sink {
         siddhiManager.shutdown();
     }
 
-    @Test
+    @Test//(expectedExceptions = ConnectionUnavailableException.class)
     public void hl7PublishTestConnectionUnavailable() throws InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
@@ -488,7 +488,7 @@ public class TestCaseOfHl7Sink {
         siddhiAppRuntime.shutdown();
     }
 
-    @Test
+    @Test//(expectedExceptions = Hl7SinkAdaptorRuntimeException.class)
     public void hl7PublishTestUnSupportCharsetForServer() throws InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
@@ -518,8 +518,8 @@ public class TestCaseOfHl7Sink {
         } catch (InterruptedException e) {
             AssertJUnit.fail("interrupted");
         }
-        AssertJUnit.assertTrue(appender.getMessages().contains("Timeout waiting for response to message with" +
-                " control ID"));
+        log.info(appender.getMessages());
+        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while sending the message"));
         siddhiAppRuntime.shutdown();
     }
 
@@ -553,6 +553,7 @@ public class TestCaseOfHl7Sink {
         } catch (InterruptedException e) {
             AssertJUnit.fail("interrupted");
         }
+        //log.info("appender.getMessages());
         AssertJUnit.assertTrue(appender.getMessages().contains("Timeout waiting for response to message " +
                 "with control ID"));
         siddhiAppRuntime.shutdown();
@@ -608,6 +609,7 @@ public class TestCaseOfHl7Sink {
         } catch (InterruptedException e) {
             AssertJUnit.fail("interrupted");
         }
+        log.info(appender.getMessages());
         AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while sending the message"));
         siddhiAppRuntime.shutdown();
     }
@@ -675,6 +677,37 @@ public class TestCaseOfHl7Sink {
         } catch (InterruptedException e) {
             AssertJUnit.fail("interrupted");
         }
+        siddhiAppRuntime.shutdown();
+    }
+
+    @Test
+    public void hl7PudblishTestER7() throws InterruptedException {
+
+        log.info("---------------------------------------------------------------------------------------------");
+        log.info("hl7 Sink test with ER7 format message - multiple messages and different Message Types.");
+        log.info("---------------------------------------------------------------------------------------------");
+        log = Logger.getLogger(Hl7Sink.class);
+        UnitTestAppender appender = new UnitTestAppender();
+        log.addAppender(appender);
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String siddhiApp = "@App:name('TestExecutionPlan')\n" +
+                "@sink(type='hl7', " +
+                "uri = 'localhost:5011', " +
+                "hl7.encoding = 'er7', " +
+                "@map(type = 'text', @payload(\"{{payload}}\")))" +
+                "define stream hl7stream(payload string);";
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);
+        hl7SinkTestUtil.connect(5011, count, eventArrived, false, 3);
+        InputHandler stream = siddhiAppRuntime.getInputHandler("hl7stream");
+        siddhiAppRuntime.start();
+        String payLoadER72 = "MSH|^~&|NES|NINTENDO|TESTSYSTEM|TESTFACILITY|20010101000000||ADT^A04|" +
+                "Q123456789T123456789X123456|P|2.3\r" +
+                "EVN|A04|20010101000000|||^KOOPA^BOWSER^^^^^^^CURRENT\r";
+
+            stream.send(new Object[]{payLoadER72});
+
+        Thread.sleep(3000);
+        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while sending the message"));
         siddhiAppRuntime.shutdown();
     }
 }

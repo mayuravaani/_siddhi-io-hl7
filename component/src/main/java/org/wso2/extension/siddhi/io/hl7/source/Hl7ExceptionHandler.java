@@ -30,6 +30,8 @@ public class Hl7ExceptionHandler implements ReceivingApplicationExceptionHandler
 
     private static final Logger log = Logger.getLogger(Hl7ExceptionHandler.class);
 
+
+
     @Override
     public String processException(String s, Map<String, Object> map, String outGoingMsg, Exception e) {
 

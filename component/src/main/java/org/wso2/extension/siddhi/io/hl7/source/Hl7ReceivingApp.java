@@ -28,6 +28,7 @@ import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
 import org.apache.log4j.Logger;
+import org.wso2.extension.siddhi.io.hl7.source.exception.Hl7SourceAdaptorRuntimeException;
 import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
 
 import java.io.IOException;
@@ -81,7 +82,7 @@ public class Hl7ReceivingApp implements ReceivingApplication {
     }
 
     @Override
-    public Message processMessage(Message theMessage, Map<String, Object> theMetadata)
+    public Message processMessage(Message message, Map<String, Object> metaData)
             throws HL7Exception, ReceivingApplicationException {
 
         Parser pipeParser = hapiContext.getPipeParser();
@@ -99,17 +100,30 @@ public class Hl7ReceivingApp implements ReceivingApplication {
             }
         }
         if (hl7EncodeType.toUpperCase(Locale.ENGLISH).equals("ER7")) {
-            String er7Msg = pipeParser.encode(theMessage);
+            String er7Msg = pipeParser.encode(message);
             sourceEventListener.onEvent("payload: " + "'" + er7Msg + "'", null);
         } else {
-            String xmlMsg = xmlParser.encode(theMessage);
+            String xmlMsg = xmlParser.encode(message);
             sourceEventListener.onEvent(xmlMsg, null);
         }
         Message ackMsg;
         try {
-            ackMsg = theMessage.generateACK();
+            ackMsg = message.generateACK();
         } catch (IOException e) {
             throw new ReceivingApplicationException("Error: ", e);
+        }
+        if (conformanceUsed) {
+            HL7Exception[] problems;
+            try {
+                problems = new DefaultValidator().validate(message,
+                        conformanceProfile.getMessage());
+            } catch (ProfileException e) {
+                throw new HL7Exception(e);
+            }
+            if (problems.length > 0) {
+                throw new Hl7SourceAdaptorRuntimeException("The following validation errors were found during " +
+                        "message validation: \n" + Arrays.toString(problems) + "\n");
+            }
         }
         if (hl7AckType.toUpperCase(Locale.ENGLISH).equals("ER7")) {
             String er7AckMsg = pipeParser.encode(ackMsg);
@@ -119,27 +133,11 @@ public class Hl7ReceivingApp implements ReceivingApplication {
             String xmlAckMsg = xmlParser.encode(ackMsg);
             log.info("Sent Acknowledgement: \n" + xmlAckMsg);
         }
-
-        if (conformanceUsed) {
-            HL7Exception[] problems;
-            try {
-                problems = new DefaultValidator().validate(theMessage,
-                        conformanceProfile.getMessage());
-            } catch (ProfileException e) {
-                throw new HL7Exception(e);
-            }
-            if (problems.length > 0) {
-                throw new HL7Exception("The following validation errors were found during message " +
-                        "validation: \n" + Arrays.toString(problems) + "\n");
-            } else {
-                log.info("No Validation Errors with the Conformance Profile.");
-            }
-        }
         return ackMsg;
     }
 
     @Override
-    public boolean canProcess(Message theMessage) {
+    public boolean canProcess(Message message) {
 
         return true;
     }

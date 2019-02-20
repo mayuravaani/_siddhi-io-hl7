@@ -28,7 +28,7 @@ import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.protocol.ApplicationRouter;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import org.apache.log4j.Logger;
-import org.wso2.extension.siddhi.io.hl7.util.MshGenerator;
+import org.wso2.extension.siddhi.io.hl7.util.TestUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class Hl7SinkTestUtil {
     private static int count;
     private static boolean eventArrived;
     private static List<String> results;
-    private MshGenerator mshGenerator = new MshGenerator();
+    private TestUtil testUtil = new TestUtil();
 
     public void connect(int port, int counter, boolean eventArrive, boolean useTLS, int expectedEventCount)
             throws InterruptedException {
@@ -111,7 +111,7 @@ public class Hl7SinkTestUtil {
             try {
                 count++;
                 eventArrived = true;
-                results.add(mshGenerator.getControlID(message));
+                results.add(testUtil.getControlID(message));
                 return message.generateACK();
             } catch (IOException e) {
                 throw new HL7Exception(e);

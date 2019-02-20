@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.wso2.extension.siddhi.io.hl7.util.MshGenerator;
+import org.wso2.extension.siddhi.io.hl7.util.TestUtil;
 import org.wso2.extension.siddhi.io.hl7.util.UnitTestAppender;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
@@ -40,7 +40,7 @@ public class TestCaseOfHl7SinkForTls {
     private volatile boolean eventArrived;
     private static Logger log = Logger.getLogger(TestCaseOfHl7SinkForTls.class);
     private PipeParser pipeParser = new PipeParser();
-    private MshGenerator mshGenerator = new MshGenerator();
+    private TestUtil testUtil = new TestUtil();
     private Hl7SinkTestUtil hl7SinkTestUtil;
 
     @BeforeMethod
@@ -94,8 +94,8 @@ public class TestCaseOfHl7SinkForTls {
         eventArrived = hl7SinkTestUtil.getEventArrived();
         AssertJUnit.assertEquals(2, count);
         AssertJUnit.assertTrue(eventArrived);
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadER71Msg)));
-        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(mshGenerator.getControlID(payLoadER72Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadER71Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadER72Msg)));
         siddhiAppRuntime.shutdown();
     }
 
@@ -133,7 +133,7 @@ public class TestCaseOfHl7SinkForTls {
             AssertJUnit.fail("interrupted");
         }
         Thread.sleep(5000);
-        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while sending the message."));
+        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while sending the message"));
         siddhiAppRuntime.shutdown();
     }
 
@@ -180,8 +180,8 @@ public class TestCaseOfHl7SinkForTls {
         eventArrived = hl7SinkTestUtil1.getEventArrived();
         AssertJUnit.assertEquals(2, count);
         AssertJUnit.assertTrue(eventArrived);
-        AssertJUnit.assertTrue(hl7SinkTestUtil1.assertMessageContent(mshGenerator.getControlID(payLoadER71Msg)));
-        AssertJUnit.assertTrue(hl7SinkTestUtil1.assertMessageContent(mshGenerator.getControlID(payLoadER72Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil1.assertMessageContent(testUtil.getControlID(payLoadER71Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil1.assertMessageContent(testUtil.getControlID(payLoadER72Msg)));
         siddhiAppRuntime.shutdown();
     }
 
@@ -199,6 +199,27 @@ public class TestCaseOfHl7SinkForTls {
                 "tls.enabled = 'true', " +
                 "tls.keystore.filepath = 'src/test/resources/security/invalid.jks', " +
                 "tls.keystore.passphrase = 'changeit', " +
+                "@map(type = 'text', @payload(\"{{payload}}\")))" +
+                "define stream hl7stream(payload string);";
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);
+        siddhiAppRuntime.start();
+        siddhiAppRuntime.shutdown();
+    }
+
+    @Test(expectedExceptions = SiddhiAppCreationException.class)
+    public void hl7PublisherTestForInvalidKemystoreFile() {
+
+        log.info("---------------------------------------------------------------------------------------------");
+        log.info("hl7 source test for enabling tls - Invalid keystore file");
+        log.info("---------------------------------------------------------------------------------------------");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String siddhiApp = "@App:name('TestExecutionPlan')\n" +
+                "@sink(type='hl7', " +
+                "uri = 'hl7://localhost:5014', " +
+                "hl7.encoding = 'er7', " +
+                "tls.enabled = 'true', " +
+                "tls.keystore.filepath = 'src/test/resources/security/symmetrickey.jks', " +
+                "tls.keystore.passphrase = 'trustpassword', " +
                 "@map(type = 'text', @payload(\"{{payload}}\")))" +
                 "define stream hl7stream(payload string);";
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);
@@ -262,6 +283,28 @@ public class TestCaseOfHl7SinkForTls {
                 "tls.enabled = 'true', " +
                 "tls.keystore.filepath = 'src/test/resources/security/kk.jks', " +
                 "tls.keystore.passphrase = 'chaaangeit', " +
+                "@map(type = 'text', @payload(\"{{payload}}\")))" +
+                "define stream hl7stream(payload string);";
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);
+        siddhiAppRuntime.start();
+        siddhiAppRuntime.shutdown();
+    }
+
+    @Test(expectedExceptions = SiddhiAppCreationException.class)
+    public void hl7PublisherTestForWrongKeyStore() {
+
+        log.info("---------------------------------------------------------------------------------------------");
+        log.info("hl7 source test for enabling tls - invalid file");
+        log.info("---------------------------------------------------------------------------------------------");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String siddhiApp = "@App:name('TestExecutionPlan')\n" +
+                "@sink(type='hl7', " +
+                "uri = 'hl7://localhost:5014', " +
+                "hl7.encoding = 'er7', " +
+                "tls.enabled = 'true', " +
+                "tls.keystore.type = 'vv', " +
+                "tls.keystore.filepath = 'src/test/resources/security/keystore.jks', " +
+                "tls.keystore.passphrase = 'changeit', " +
                 "@map(type = 'text', @payload(\"{{payload}}\")))" +
                 "define stream hl7stream(payload string);";
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);

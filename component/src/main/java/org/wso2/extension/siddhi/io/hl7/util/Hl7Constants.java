@@ -36,6 +36,8 @@ public class Hl7Constants {
     public static final String DEFAULT_ACK_HL7_ENCODING = "ER7";
     public static final String TLS_KEYSTORE_FILEPATH = "tls.keystore.filepath";
     public static final String TLS_KEYSTORE_PASSPHRASE = "tls.keystore.passphrase";
+    public static final String TLS_KEYSTORE_TYPE = "tls.keystore.type";
+    public static final String DEFAULT_TLS_KEYSTORE_TYPE = "jks";
     public static final String DEFAULT_TLS_KEYSTORE_FILEPATH =
             System.getProperty("carbon.home") + "/resources/security/wso2carbon.jks";
     public static final String DEFAULT_TLS_KEYSTORE_PASSPHRASE = "wso2carbon";
