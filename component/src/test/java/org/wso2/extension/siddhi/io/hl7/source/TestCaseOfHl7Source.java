@@ -534,7 +534,7 @@ public class TestCaseOfHl7Source {
                 "port = '5047',\n" +
                 "hl7.encoding = 'ER7',\n" +
                 "hl7.conformance.profile.used = 'true',\n" +
-                "hl7.conformance.profile.file.name = 'ADT_A01Msg.xml',\n" +
+                "hl7.conformance.profile.file.path = 'src/test/resources/security/ADT_A01Msg.xml',\n" +
                 "@map(type = 'text'))\n" +
                 "define stream hl7stream (payload string);\n";
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);
@@ -592,7 +592,7 @@ public class TestCaseOfHl7Source {
                 "port = '5040',\n" +
                 "hl7.encoding = 'ER7',\n" +
                 "hl7.conformance.profile.used = 'true',\n" +
-                "hl7.conformance.profile.file.name = 'ADT_A01.xml',\n" +
+                "hl7.conformance.profile.file.path = 'src/test/resources/security/ADT_A01.xml',\n" +
                 "@map(type = 'text'))\n" +
                 "define stream hl7stream (payload string);\n";
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);
@@ -645,7 +645,7 @@ public class TestCaseOfHl7Source {
     public void hl7ConsumerTestForConformanceFileWithEmptyField() throws HL7Exception, InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
-        log.info("hl7 source to test with using conformance profile without giving file name");
+        log.info("hl7 source to test with using conformance profile without giving file path");
         log.info("---------------------------------------------------------------------------------------------");
         receivedEvent = new ArrayList<>(1);
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -707,7 +707,7 @@ public class TestCaseOfHl7Source {
     public void hl7ConsumerTestConformanceProfileInvalidFile() throws HL7Exception, InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
-        log.info("hl7 source to test multiple events with different type of ER7 format messages - text mapping");
+        log.info("hl7 source test with the give conformance profile file is invalid. ");
         log.info("---------------------------------------------------------------------------------------------");
         receivedEvent = new ArrayList<>(1);
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -716,7 +716,7 @@ public class TestCaseOfHl7Source {
                 "port = '5041',\n" +
                 "hl7.encoding = 'ER7',\n" +
                 "hl7.conformance.profile.used = 'true',\n" +
-                "hl7.conformance.profile.file.name = 'kk.js',\n" +
+                "hl7.conformance.profile.file.path = 'src/test/resources/security/kk.js',\n" +
 
                 "@map(type = 'text'))\n" +
                 "define stream hl7stream (payload string);\n";
@@ -771,7 +771,7 @@ public class TestCaseOfHl7Source {
     public void hl7ConsumerTestConformanceProfileFileNotFound() throws HL7Exception, InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
-        log.info("hl7 source to test multiple events with different type of ER7 format messages - text mapping");
+        log.info("hl7 source test with the give conformance profile path is not found.");
         log.info("---------------------------------------------------------------------------------------------");
         receivedEvent = new ArrayList<>(1);
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -780,7 +780,7 @@ public class TestCaseOfHl7Source {
                 "port = '5041',\n" +
                 "hl7.encoding = 'ER7',\n" +
                 "hl7.conformance.profile.used = 'true',\n" +
-                "hl7.conformance.profile.file.name = 'src/test',\n" +
+                "hl7.conformance.profile.file.path = 'src/test',\n" +
 
                 "@map(type = 'text'))\n" +
                 "define stream hl7stream (payload string);\n";
@@ -835,7 +835,7 @@ public class TestCaseOfHl7Source {
     public void hl7ConsumerTestConformanceProfileWithProfileException() throws HL7Exception, InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
-        log.info("hl7 source to test multiple events with different type of ER7 format messages - text mapping");
+        log.info("hl7 source to test with conformance profile exception");
         log.info("---------------------------------------------------------------------------------------------");
         log = Logger.getLogger(Hl7ReceivingApp.class);
         UnitTestAppender appender = new UnitTestAppender();
@@ -847,7 +847,7 @@ public class TestCaseOfHl7Source {
                 "port = '5042',\n" +
                 "hl7.encoding = 'ER7',\n" +
                 "hl7.conformance.profile.used = 'true',\n" +
-                "hl7.conformance.profile.file.name = 'ADT_A31.xml',\n" +
+                "hl7.conformance.profile.file.path = 'src/test/resources/security/ADT_A31.xml',\n" +
                 "@map(type = 'text'))\n" +
                 "define stream hl7stream (payload string);\n";
 
@@ -903,7 +903,7 @@ public class TestCaseOfHl7Source {
     public void hl7ConsumerTestPauseAndResume() throws InterruptedException, HL7Exception {
 
         log.info("---------------------------------------------------------------------------------------------");
-        log.info("hl7 source to test multiple events with different type of ER7 format messages - text mapping");
+        log.info("hl7 source to test for pause and resume");
         log.info("---------------------------------------------------------------------------------------------");
 
         receivedEvent = new ArrayList<>(3);

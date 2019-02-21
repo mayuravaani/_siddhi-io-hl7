@@ -41,10 +41,10 @@ import java.nio.charset.UnsupportedCharsetException;
 
 public class TestCaseOfHl7Sink {
 
+    private static Logger log = Logger.getLogger(TestCaseOfHl7Sink.class);
     private volatile int count;
     private volatile boolean eventArrived;
     private Hl7SinkTestUtil hl7SinkTestUtil;
-    private static Logger log = Logger.getLogger(TestCaseOfHl7Sink.class);
     private PipeParser pipeParser = new PipeParser();
     private XMLParser xmlParser = new DefaultXMLParser();
     private TestUtil testUtil = new TestUtil();
@@ -484,7 +484,6 @@ public class TestCaseOfHl7Sink {
         Hl7SinkTestUtil hl7SinkTestUtil1 = new Hl7SinkTestUtil();
         hl7SinkTestUtil1.connect(5012, count, eventArrived, false, 2);
         siddhiAppRuntime.start();
-        Thread.sleep(10000);
         siddhiAppRuntime.shutdown();
     }
 
@@ -518,12 +517,12 @@ public class TestCaseOfHl7Sink {
         } catch (InterruptedException e) {
             AssertJUnit.fail("interrupted");
         }
-        log.info(appender.getMessages());
-        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while sending the message"));
+        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while processing the message." +
+                " Please check the TestExecutionPlan:hl7stream"));
         siddhiAppRuntime.shutdown();
     }
 
-    @Test
+    @Test//(expectedExceptions = Hl7SinkRuntimeException.class)
     public void hl7PublishTestWithDifferentTimeout() throws InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
@@ -553,9 +552,9 @@ public class TestCaseOfHl7Sink {
         } catch (InterruptedException e) {
             AssertJUnit.fail("interrupted");
         }
-        //log.info("appender.getMessages());
-        AssertJUnit.assertTrue(appender.getMessages().contains("Timeout waiting for response to message " +
-                "with control ID"));
+        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while processing the message. " +
+                "Please check the TestExecutionPlan:hl7stream"));
+
         siddhiAppRuntime.shutdown();
     }
 
@@ -579,7 +578,7 @@ public class TestCaseOfHl7Sink {
 
     }
 
-    @Test
+    @Test//(expectedExceptions = Hl7SinkRuntimeException.class)
     public void hl7PublishTestUnsupportedHl7Encoding() throws InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
@@ -609,8 +608,8 @@ public class TestCaseOfHl7Sink {
         } catch (InterruptedException e) {
             AssertJUnit.fail("interrupted");
         }
-        log.info(appender.getMessages());
-        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while sending the message"));
+        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while processing the message. Please " +
+                "check the TestExecutionPlan:hl7stream"));
         siddhiAppRuntime.shutdown();
     }
 
@@ -670,7 +669,6 @@ public class TestCaseOfHl7Sink {
         String payLoadER7 = "MSH|^~\\&|NES|NINTENDO|TESTSYSTEM|TESTFACILITY|20010101000000||ADT^A04|" +
                 "Q123456789T123456789X123456|P|2.3\r" +
                 "EVN|A04|20010101000000|||^KOOPA^BOWSER^^^^^^^CURRENT\r";
-
         try {
             stream.send(new Object[]{payLoadER7});
 
@@ -680,15 +678,12 @@ public class TestCaseOfHl7Sink {
         siddhiAppRuntime.shutdown();
     }
 
-    @Test
+    @Test//(expectedExceptions = Hl7SinkRuntimeException.class)
     public void hl7PublishTestInputMessageWrongFormat() throws InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
         log.info("hl7 Sink test with ER7 format message - Input message format is invalid.");
         log.info("---------------------------------------------------------------------------------------------");
-        log = Logger.getLogger(Hl7Sink.class);
-        UnitTestAppender appender = new UnitTestAppender();
-        log.addAppender(appender);
         SiddhiManager siddhiManager = new SiddhiManager();
         String siddhiApp = "@App:name('TestExecutionPlan')\n" +
                 "@sink(type='hl7', " +
@@ -703,11 +698,13 @@ public class TestCaseOfHl7Sink {
         String payLoadER72 = "MSH|^~&|NES|NINTENDO|TESTSYSTEM|TESTFACILITY|20010101000000||ADT^A04|" +
                 "Q123456789T123456789X123456|P|2.3\r" +
                 "EVN|A04|20010101000000|||^KOOPA^BOWSER^^^^^^^CURRENT\r";
-
+        try {
             stream.send(new Object[]{payLoadER72});
 
-        Thread.sleep(3000);
-        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while sending the message"));
+        } catch (InterruptedException e) {
+            AssertJUnit.fail("interrupted");
+        }
         siddhiAppRuntime.shutdown();
     }
+
 }

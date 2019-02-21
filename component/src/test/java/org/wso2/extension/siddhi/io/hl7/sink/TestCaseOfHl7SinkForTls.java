@@ -89,7 +89,6 @@ public class TestCaseOfHl7SinkForTls {
 
         Message payLoadER71Msg = pipeParser.parse(payLoadER71);
         Message payLoadER72Msg = pipeParser.parse(payLoadER72);
-        Thread.sleep(10000);
         count = hl7SinkTestUtil.getCount();
         eventArrived = hl7SinkTestUtil.getEventArrived();
         AssertJUnit.assertEquals(2, count);
@@ -132,8 +131,8 @@ public class TestCaseOfHl7SinkForTls {
         } catch (InterruptedException e) {
             AssertJUnit.fail("interrupted");
         }
-        Thread.sleep(5000);
-        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while sending the message"));
+        AssertJUnit.assertTrue(appender.getMessages().contains("Interruption occurred while sending the message " +
+                "from stream: TestExecutionPlan:hl7stream"));
         siddhiAppRuntime.shutdown();
     }
 
@@ -158,7 +157,8 @@ public class TestCaseOfHl7SinkForTls {
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);
         InputHandler stream = siddhiAppRuntime.getInputHandler("hl7stream");
         Hl7SinkTestUtil hl7SinkTestUtil1 = new Hl7SinkTestUtil();
-        hl7SinkTestUtil1.connectWithTlsPath(5014, count, eventArrived, true, 2, tlsPath, passPhrase);
+        hl7SinkTestUtil1.connectWithTlsPath(5014, count, eventArrived, true, 2, tlsPath,
+                passPhrase);
         siddhiAppRuntime.start();
         String payLoadER71 = "MSH|^~\\&|NES|NINTENDO|TESTSYSTEM|TESTFACILITY|20010101000000||ADT^A04|" +
                 "Q123456789T123456789X123456|P|2.3\r" +
@@ -175,7 +175,6 @@ public class TestCaseOfHl7SinkForTls {
 
         Message payLoadER71Msg = pipeParser.parse(payLoadER71);
         Message payLoadER72Msg = pipeParser.parse(payLoadER72);
-        Thread.sleep(10000);
         count = hl7SinkTestUtil1.getCount();
         eventArrived = hl7SinkTestUtil1.getEventArrived();
         AssertJUnit.assertEquals(2, count);

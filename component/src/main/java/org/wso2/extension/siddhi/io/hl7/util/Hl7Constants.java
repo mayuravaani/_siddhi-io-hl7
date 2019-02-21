@@ -43,7 +43,6 @@ public class Hl7Constants {
     public static final String DEFAULT_TLS_KEYSTORE_PASSPHRASE = "wso2carbon";
     public static final String HL7_CONFORMANCE_PROFILE_USED = "hl7.conformance.profile.used";
     public static final String DEFAULT_CONFORMANCE_PROFILE_USED = "false";
-    public static final String HL7_CONFORMANCE_PROFILE_FILE = "hl7.conformance.profile.file.name";
+    public static final String HL7_CONFORMANCE_PROFILE_FILE = "hl7.conformance.profile.file.path";
     public static final String DEFAULT_CONFORMANCE_PROFILE_FILE = "";
-    public static final String DEFAULT_PATH = System.getProperty("carbon.home") + "/resources/security/";
 }

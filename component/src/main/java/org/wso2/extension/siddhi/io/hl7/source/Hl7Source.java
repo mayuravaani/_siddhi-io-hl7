@@ -126,10 +126,10 @@ import java.util.Map;
                         optional = true, defaultValue = "false",
                         type = {DataType.BOOL}),
 
-                @Parameter(name = "hl7.conformance.profile.file.name",
-                        description = "The conformance profile file that is used to validate the incoming " +
-                                "message. User should store the file within the `${carbon.home}/resources/security` " +
-                                "directory. If the given file is invalid, then that will not be used in validation.",
+                @Parameter(name = "hl7.conformance.profile.file.path",
+                        description = "Path conformance profile file that is used to validate the incoming " +
+                                "message. User should give the file path, if conformance profile is used to validate " +
+                                "the message",
                         optional = true, defaultValue = "Empty",
                         type = {DataType.STRING})
 
@@ -176,13 +176,16 @@ public class Hl7Source extends Source {
     private boolean conformanceProfileUsed;
     private RuntimeProfile conformanceProfile;
     private String tlsKeystoreType;
-
+    private String streamID;
+    private String siddhiAppName;
     @Override
     public void init(SourceEventListener sourceEventListener, OptionHolder optionHolder,
                      String[] requestedTransportPropertyNames, ConfigReader configReader,
                      SiddhiAppContext siddhiAppContext) {
 
         this.sourceEventListener = sourceEventListener;
+        this.streamID = sourceEventListener.getStreamDefinition().getId();
+        this.siddhiAppName = siddhiAppContext.getName();
         this.port = Integer.parseInt(optionHolder.validateAndGetStaticValue(Hl7Constants.HL7_PORT_NO));
         this.hl7Encoding = optionHolder.validateAndGetStaticValue(Hl7Constants.HL7_ENCODING);
         this.hl7AckEncoding = optionHolder.validateAndGetStaticValue(Hl7Constants.ACK_HL7_ENCODING,
@@ -207,6 +210,7 @@ public class Hl7Source extends Source {
         if (conformanceProfileUsed) {
             conformanceProfile = getConformanceProfile(profileFileName);
         }
+        doTlsValidation();
     }
 
     @Override
@@ -223,31 +227,10 @@ public class Hl7Source extends Source {
         mllp.setCharset(charset);
         hapiContext.setLowerLayerProtocol(mllp);
         if (tlsEnabled) {
-            try {
-
-                KeyStore keyStore = KeystoreUtils.loadKeystore(tlsKeystoreFilepath, tlsKeystorePassphrase);
-                KeyStore.getInstance(tlsKeystoreType);
-                KeystoreUtils.validateKeystoreForTlsSending(keyStore);
-                CustomCertificateTlsSocketFactory tlsFac = new CustomCertificateTlsSocketFactory(tlsKeystoreType,
-                        tlsKeystoreFilepath, tlsKeystorePassphrase);
-                hapiContext.setSocketFactory(new HapiSocketTlsFactoryWrapper(tlsFac));
-            } catch (FileNotFoundException e) {
-                throw new SiddhiAppCreationException("Failed to found the keystore file. Please check the " +
-                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " +
-                        sourceEventListener.getStreamDefinition().getId(), e);
-            } catch (IOException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
-                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " +
-                        sourceEventListener.getStreamDefinition().getId(), e);
-            } catch (CertificateException | NoSuchAlgorithmException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore. please check the keystore " +
-                        "defined in" + sourceEventListener.getStreamDefinition().getId(), e);
-            } catch (KeyStoreException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore. Please check the tls.keystore.type = " +
-                        tlsKeystoreType + "  defined in " + sourceEventListener.getStreamDefinition().getId(), e);
-            }
+            CustomCertificateTlsSocketFactory tlsFac = new CustomCertificateTlsSocketFactory(tlsKeystoreType,
+                    tlsKeystoreFilepath, tlsKeystorePassphrase);
+            hapiContext.setSocketFactory(new HapiSocketTlsFactoryWrapper(tlsFac));
         }
-///////////////////////////////////////////////////////////////////////////////////////
         hl7Service = hapiContext.newServer(port, tlsEnabled);
         try {
             hl7Service.startAndWait();
@@ -256,7 +239,8 @@ public class Hl7Source extends Source {
                     + ", ", e);
         }
         hl7Service.registerApplication(new RegistrationEventRouting(), new Hl7ReceivingApp(sourceEventListener,
-                hl7Encoding, hl7AckEncoding, hapiContext, conformanceProfileUsed, conformanceProfile));
+                siddhiAppName, streamID, hl7Encoding, hl7AckEncoding, hapiContext, conformanceProfileUsed,
+                conformanceProfile));
         hl7Service.setExceptionHandler(new Hl7ExceptionHandler());
     }
 
@@ -303,17 +287,15 @@ public class Hl7Source extends Source {
             InputStream in = null;
             try {
                 ProfileParser profileParser = new ProfileParser(false);
-                in = new FileInputStream(Hl7Constants.DEFAULT_PATH + profileFileName);
+                in = new FileInputStream(profileFileName);
                 String file = Hl7Utils.streamToString(in);
                 return profileParser.parse(file);
             } catch (ProfileException e) {
-                throw new SiddhiAppCreationException("The conformance Profile file given in" +
-                        sourceEventListener.getStreamDefinition().getId() +" is not supported." +
-                        " Hence, dropping the profile validation. " + e);
+                throw new SiddhiAppCreationException("The conformance Profile file given in" + siddhiAppName + ":" +
+                        streamID + " is not supported. Hence, dropping the profile validation. ", e);
             } catch (IOException e) {
                 throw new SiddhiAppCreationException("Failed to load the given conformance profile file given in " +
-                        sourceEventListener.getStreamDefinition().getId() + " Hence, dropping the profile " +
-                        "validation. ", e);
+                        siddhiAppName + ":" + streamID + " Hence, dropping the profile validation. ", e);
             } finally {
                 if (in != null) {
                     try {
@@ -324,9 +306,35 @@ public class Hl7Source extends Source {
                 }
             }
         } else {
-            throw new SiddhiAppCreationException("Empty field has been found in hl7.conformance.profile.file.name " +
-                    "defined in " + sourceEventListener.getStreamDefinition().getId() +
-                    ", Please prefer your file name. Hence, dropping the validation.");
+            throw new SiddhiAppCreationException("Empty field has been found in hl7.conformance.profile.file.path " +
+                    "defined in " + siddhiAppName + ":" + streamID + ", Please prefer your file name. Hence, " +
+                    "dropping the validation. ");
+        }
+    }
+
+    private void doTlsValidation() {
+
+        if (tlsEnabled) {
+            try {
+
+                KeyStore keyStore = KeystoreUtils.loadKeystore(tlsKeystoreFilepath, tlsKeystorePassphrase);
+                KeyStore.getInstance(tlsKeystoreType);
+                KeystoreUtils.validateKeystoreForTlsSending(keyStore);
+            } catch (FileNotFoundException e) {
+                throw new SiddhiAppCreationException("Failed to found the keystore file. Please check the " +
+                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " + siddhiAppName + ":" +
+                        streamID + ". ", e);
+            } catch (IOException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
+                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " + siddhiAppName + ":" +
+                        streamID + ". ", e);
+            } catch (CertificateException | NoSuchAlgorithmException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore. please check the keystore defined in" +
+                        siddhiAppName + ":" + streamID + ". ", e);
+            } catch (KeyStoreException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore. Please check the tls.keystore.type = " +
+                        tlsKeystoreType + "  defined in " + siddhiAppName + ":" + streamID + ". ", e);
+            }
         }
     }
 

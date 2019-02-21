@@ -28,7 +28,7 @@ import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
 import org.apache.log4j.Logger;
-import org.wso2.extension.siddhi.io.hl7.source.exception.Hl7SourceAdaptorRuntimeException;
+import org.wso2.extension.siddhi.io.hl7.source.exception.Hl7SourceRuntimeException;
 import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
 
 import java.io.IOException;
@@ -54,6 +54,8 @@ public class Hl7ReceivingApp implements ReceivingApplication {
     private HapiContext hapiContext;
     private boolean conformanceUsed;
     private RuntimeProfile conformanceProfile;
+    private String siddhiAppName;
+    private String streamID;
 
     public Hl7ReceivingApp() {
 
@@ -68,11 +70,16 @@ public class Hl7ReceivingApp implements ReceivingApplication {
      * @param conformanceUsed     - Conformance profile is used or not
      * @param conformanceProfile  - Conformance profile file name
      * @param sourceEventListener - listens events
+     * @param streamID            - the stream name of the siddhiApp
+     * @param siddhiAppName       - the name of the siddhiApp
      */
-    public Hl7ReceivingApp(SourceEventListener sourceEventListener, String hl7EncodeType, String hl7AckType,
-                           HapiContext hapiContext, boolean conformanceUsed, RuntimeProfile conformanceProfile) {
+    public Hl7ReceivingApp(SourceEventListener sourceEventListener, String siddhiAppName, String streamID,
+                           String hl7EncodeType, String hl7AckType, HapiContext hapiContext, boolean conformanceUsed,
+                           RuntimeProfile conformanceProfile) {
 
         this.sourceEventListener = sourceEventListener;
+        this.siddhiAppName = siddhiAppName;
+        this.streamID = streamID;
         this.hl7EncodeType = hl7EncodeType;
         this.hl7AckType = hl7AckType;
         this.hapiContext = hapiContext;
@@ -121,17 +128,17 @@ public class Hl7ReceivingApp implements ReceivingApplication {
                 throw new HL7Exception(e);
             }
             if (problems.length > 0) {
-                throw new Hl7SourceAdaptorRuntimeException("The following validation errors were found during " +
+                throw new Hl7SourceRuntimeException("The following validation errors were found during " +
                         "message validation: \n" + Arrays.toString(problems) + "\n");
             }
         }
         if (hl7AckType.toUpperCase(Locale.ENGLISH).equals("ER7")) {
             String er7AckMsg = pipeParser.encode(ackMsg);
             er7AckMsg = er7AckMsg.replaceAll("\r", "\n");
-            log.info("Sent Acknowledgement: \n" + er7AckMsg);
+            log.info("Sent Acknowledgement for stream " + siddhiAppName + ":" + streamID + ": \n" + er7AckMsg);
         } else {
             String xmlAckMsg = xmlParser.encode(ackMsg);
-            log.info("Sent Acknowledgement: \n" + xmlAckMsg);
+            log.info("Sent Acknowledgement for stream " + siddhiAppName + ":" + streamID + ": \n" + xmlAckMsg);
         }
         return ackMsg;
     }

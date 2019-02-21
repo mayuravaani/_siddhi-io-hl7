@@ -128,7 +128,7 @@ define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string
 
 <span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span>
 ```
-@source(type="hl7", port="<INT>", hl7.encoding="<STRING>", hl7.ack.encoding="<STRING>", charset="<STRING>", tls.enabled="<BOOL>", tls.keystore.filepath="<STRING>", tls.keystore.type="<STRING>", tls.keystore.passphrase="<STRING>", hl7.conformance.profile.used="<BOOL>", hl7.conformance.profile.file.name="<STRING>", @map(...)))
+@source(type="hl7", port="<INT>", hl7.encoding="<STRING>", hl7.ack.encoding="<STRING>", charset="<STRING>", tls.enabled="<BOOL>", tls.keystore.filepath="<STRING>", tls.keystore.type="<STRING>", tls.keystore.passphrase="<STRING>", hl7.conformance.profile.used="<BOOL>", hl7.conformance.profile.file.path="<STRING>", @map(...)))
 ```
 
 <span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
@@ -214,8 +214,8 @@ define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string
         <td style="vertical-align: top">No</td>
     </tr>
     <tr>
-        <td style="vertical-align: top">hl7.conformance.profile.file.name</td>
-        <td style="vertical-align: top; word-wrap: break-word">The conformance profile file that is used to validate the incoming message. User should store the file within the <code>${carbon.home}/resources/security</code> directory. If the given file is invalid, then that will not be used in validation.</td>
+        <td style="vertical-align: top">hl7.conformance.profile.file.path</td>
+        <td style="vertical-align: top; word-wrap: break-word">Path conformance profile file that is used to validate the incoming message. User should give the file path, if conformance profile is used to validate the message</td>
         <td style="vertical-align: top">Empty</td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">Yes</td>

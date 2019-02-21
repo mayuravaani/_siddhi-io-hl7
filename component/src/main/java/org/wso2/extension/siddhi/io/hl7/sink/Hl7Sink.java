@@ -26,11 +26,12 @@ import ca.uhn.hl7v2.app.Initiator;
 import ca.uhn.hl7v2.hoh.sockets.CustomCertificateTlsSocketFactory;
 import ca.uhn.hl7v2.hoh.util.HapiSocketTlsFactoryWrapper;
 import ca.uhn.hl7v2.hoh.util.KeystoreUtils;
+import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.llp.MinLowerLayerProtocol;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.parser.Parser;
 import org.apache.log4j.Logger;
-import org.wso2.extension.siddhi.io.hl7.sink.exception.Hl7SinkAdaptorRuntimeException;
+import org.wso2.extension.siddhi.io.hl7.sink.exception.Hl7SinkRuntimeException;
 import org.wso2.extension.siddhi.io.hl7.util.Hl7Constants;
 import org.wso2.extension.siddhi.io.hl7.util.Hl7Utils;
 import org.wso2.siddhi.annotation.Example;
@@ -174,7 +175,6 @@ public class Hl7Sink extends Sink {
     private String hl7Encoding;
     private String hl7AckEncoding;
     private int hl7Timeout;
-    private StreamDefinition streamDefinition;
     private Connection connection;
     private String tlsKeystoreFilepath;
     private String tlsKeystorePassphrase;
@@ -182,6 +182,8 @@ public class Hl7Sink extends Sink {
     private String hostName;
     private int port;
     private String tlsKeystoreType;
+    private String streamID;
+    private String siddhiAppName;
 
     @Override
     public Class[] getSupportedInputEventClasses() {
@@ -199,7 +201,8 @@ public class Hl7Sink extends Sink {
     protected void init(StreamDefinition streamDefinition, OptionHolder optionHolder, ConfigReader configReader,
                         SiddhiAppContext siddhiAppContext) {
 
-        this.streamDefinition = streamDefinition;
+        this.siddhiAppName = siddhiAppContext.getName();
+        this.streamID =  streamDefinition.getId();
         String uri = optionHolder.validateAndGetStaticValue(Hl7Constants.HL7_URI);
         this.hl7Encoding = optionHolder.validateAndGetStaticValue(Hl7Constants.HL7_ENCODING);
         this.charset = optionHolder.validateAndGetStaticValue(Hl7Constants.CHARSET_NAME,
@@ -227,6 +230,7 @@ public class Hl7Sink extends Sink {
             hostName = separator[1].replaceAll("/", "");
             port = Integer.parseInt(separator[2]);
         }
+        doTlsValidation();
     }
 
     @Override
@@ -253,15 +257,25 @@ public class Hl7Sink extends Sink {
                 } else {
                     responseString = xmlParser.encode(response);
                 }
-                log.info("Received Response:\n" + responseString.replaceAll("\r", "\n"));
+                log.info("Received Response from : " + connection.getRemoteAddress() + ":" +
+                        connection.getRemotePort() + "\n" + responseString.replaceAll("\r", "\n"));
             } catch (HL7Exception e) {
-                ////////////////////////////////////////////////////////////////////////////////////////////
-                throw new HL7Exception("Error occurred while encoding the Received ACK Message into String", e);
+               throw new Hl7SinkRuntimeException("Error occurred while encoding the Received ACK Message " +
+                        "into String for stream: " + siddhiAppName + ":" + streamID + ". ", e);
             }
-        } catch (Exception e) {
-            log.error("Error occurred while sending the message for stream: " + streamDefinition.getId() + ": " + e);
-            throw new Hl7SinkAdaptorRuntimeException("Error occurred while sending the message for stream: " +
-                    streamDefinition.getId() + ": ", e);
+        } catch (HL7Exception e) {
+            log.error("Error occurred while processing the message. Please check the " + siddhiAppName + ":" +
+                    streamID + ", " + e);
+            throw new Hl7SinkRuntimeException("Error occurred while processing the message. Please check the " +
+                    siddhiAppName + ":" + streamID + ". ", e);
+        } catch (LLPException e) {
+            throw new Hl7SinkRuntimeException("Error encountered with MLLP protocol for stream " + siddhiAppName +
+                    ":" + streamID + ". ", e);
+        } catch (IOException e) {
+            log.error("Interruption occurred while sending the message from stream: " + siddhiAppName + ":" +
+                    streamID + ". " + e);
+            throw new Hl7SinkRuntimeException("Interruption occurred while sending the message from stream: " +
+                    siddhiAppName + ":" + streamID + ". ", e);
         }
     }
 
@@ -272,36 +286,18 @@ public class Hl7Sink extends Sink {
         mllp.setCharset(charset);
         hapiContext.setLowerLayerProtocol(mllp);
         if (tlsEnabled) {
-            try {
-
-                KeyStore keyStore = KeystoreUtils.loadKeystore(tlsKeystoreFilepath, tlsKeystorePassphrase);
-                KeyStore.getInstance(tlsKeystoreType);
-                KeystoreUtils.validateKeystoreForTlsSending(keyStore);
-                CustomCertificateTlsSocketFactory tlsFac = new CustomCertificateTlsSocketFactory(tlsKeystoreType,
-                        tlsKeystoreFilepath, tlsKeystorePassphrase);
-                hapiContext.setSocketFactory(new HapiSocketTlsFactoryWrapper(tlsFac));
-            } catch (FileNotFoundException e) {
-                throw new SiddhiAppCreationException("Failed to found the keystore file. Please check the " +
-                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " +
-                        streamDefinition.getId(), e);
-            } catch (IOException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
-                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " +
-                        streamDefinition.getId(), e);
-            } catch (CertificateException | NoSuchAlgorithmException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore. please check the keystore " +
-                        "defined in" + streamDefinition, e);
-            } catch (KeyStoreException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
-                        "tls.keystore.type = " + tlsKeystoreType + "  defined in " + streamDefinition.getId(), e);
-            }
+            CustomCertificateTlsSocketFactory tlsFac = new CustomCertificateTlsSocketFactory(tlsKeystoreType,
+                    tlsKeystoreFilepath, tlsKeystorePassphrase);
+            hapiContext.setSocketFactory(new HapiSocketTlsFactoryWrapper(tlsFac));
         }
         try {
             connection = hapiContext.newClient(hostName, port, tlsEnabled);
-            log.info("Executing HL7Sender : HOST : " + hostName + " PORT : " + port);
+            log.info("Executing HL7Sender: HOST: " + hostName + ", PORT: " + port + " for stream " + siddhiAppName +
+                    ":" + streamID + ". ");
         } catch (HL7Exception e) {
             throw new ConnectionUnavailableException("Failed to connect with the HL7 server, check " +
-                    "the host.name = " + hostName + ", port = " + port + " defined in " + streamDefinition.getId(), e);
+                    "the host.name = " + hostName + ", port = " + port + " defined in " + siddhiAppName + ":" +
+                    streamID + ". ", e);
         }
     }
 
@@ -329,5 +325,30 @@ public class Hl7Sink extends Sink {
 
     }
 
+    private void doTlsValidation() {
+
+        if (tlsEnabled) {
+            try {
+                KeyStore keyStore = KeystoreUtils.loadKeystore(tlsKeystoreFilepath, tlsKeystorePassphrase);
+                KeyStore.getInstance(tlsKeystoreType);
+                KeystoreUtils.validateKeystoreForTlsSending(keyStore);
+            } catch (FileNotFoundException e) {
+                throw new SiddhiAppCreationException("Failed to found the keystore file." +
+                        " Please check the tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " +
+                        siddhiAppName + ":" + streamID + ". ", e);
+            } catch (IOException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
+                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " + siddhiAppName + ":" +
+                        streamID + ". ", e);
+            } catch (CertificateException | NoSuchAlgorithmException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore. please check the keystore defined in" +
+                        siddhiAppName + ":" + streamID + ". ", e);
+            } catch (KeyStoreException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore in Siddhi App. Please check " +
+                        "the tls.keystore.type = " + tlsKeystoreType + "  defined in " + siddhiAppName + ":" +
+                        streamID + ". ", e);
+            }
+        }
+    }
 }
 
