@@ -46,9 +46,12 @@ import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.core.util.transport.DynamicOptions;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
+import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -184,6 +187,7 @@ public class Hl7Sink extends Sink {
     private String tlsKeystoreType;
     private String streamID;
     private String siddhiAppName;
+    private String uri;
 
     @Override
     public Class[] getSupportedInputEventClasses() {
@@ -202,8 +206,8 @@ public class Hl7Sink extends Sink {
                         SiddhiAppContext siddhiAppContext) {
 
         this.siddhiAppName = siddhiAppContext.getName();
-        this.streamID =  streamDefinition.getId();
-        String uri = optionHolder.validateAndGetStaticValue(Hl7Constants.HL7_URI);
+        this.streamID = streamDefinition.getId();
+        this.uri = optionHolder.validateAndGetStaticValue(Hl7Constants.HL7_URI);
         this.hl7Encoding = optionHolder.validateAndGetStaticValue(Hl7Constants.HL7_ENCODING);
         this.charset = optionHolder.validateAndGetStaticValue(Hl7Constants.CHARSET_NAME,
                 Hl7Constants.DEFAULT_HL7_CHARSET);
@@ -220,16 +224,8 @@ public class Hl7Sink extends Sink {
         this.tlsKeystoreType = optionHolder.validateAndGetStaticValue(Hl7Constants.TLS_KEYSTORE_TYPE,
                 Hl7Constants.DEFAULT_TLS_KEYSTORE_TYPE);
         this.hapiContext = new DefaultHapiContext();
-        int urlSeparation = Hl7Utils.getValuesFromURI(uri, streamDefinition.getId());
+        getValuesFromUri();
         Hl7Utils.validateEncodingType(hl7Encoding, hl7AckEncoding, streamDefinition.getId());
-        String[] separator = uri.split(":");
-        if (urlSeparation == 2) {
-            hostName = separator[0];
-            port = Integer.parseInt(separator[1]);
-        } else {
-            hostName = separator[1].replaceAll("/", "");
-            port = Integer.parseInt(separator[2]);
-        }
         doTlsValidation();
     }
 
@@ -237,7 +233,7 @@ public class Hl7Sink extends Sink {
     public void publish(Object payload, DynamicOptions dynamicOptions) {
 
         Initiator initiator = connection.getInitiator();
-        String payLoad = (String) payload;
+        String hl7Message = (String) payload;
         Parser pipeParser = hapiContext.getPipeParser();
         Parser xmlParser = hapiContext.getXMLParser();
         initiator.setTimeout(hl7Timeout, TimeUnit.MILLISECONDS);
@@ -245,9 +241,9 @@ public class Hl7Sink extends Sink {
         try {
             Message message;
             if (hl7Encoding.toUpperCase(Locale.ENGLISH).equals("ER7")) {
-                message = pipeParser.parse(payLoad);
+                message = pipeParser.parse(hl7Message);
             } else {
-                message = xmlParser.parse(payLoad);
+                message = xmlParser.parse(hl7Message);
             }
             response = initiator.sendAndReceive(message);
             try {
@@ -260,12 +256,12 @@ public class Hl7Sink extends Sink {
                 log.info("Received Response from : " + connection.getRemoteAddress() + ":" +
                         connection.getRemotePort() + "\n" + responseString.replaceAll("\r", "\n"));
             } catch (HL7Exception e) {
-               throw new Hl7SinkRuntimeException("Error occurred while encoding the Received ACK Message " +
+                throw new Hl7SinkRuntimeException("Error occurred while encoding the Received ACK Message " +
                         "into String for stream: " + siddhiAppName + ":" + streamID + ". ", e);
             }
         } catch (HL7Exception e) {
             log.error("Error occurred while processing the message. Please check the " + siddhiAppName + ":" +
-                    streamID + ", " + e);
+                    streamID + ". " + e);
             throw new Hl7SinkRuntimeException("Error occurred while processing the message. Please check the " +
                     siddhiAppName + ":" + streamID + ". ", e);
         } catch (LLPException e) {
@@ -348,6 +344,29 @@ public class Hl7Sink extends Sink {
                         "the tls.keystore.type = " + tlsKeystoreType + "  defined in " + siddhiAppName + ":" +
                         streamID + ". ", e);
             }
+        }
+    }
+
+    private void getValuesFromUri() {
+
+        String[] separator = uri.split(":");
+        try {
+            URI aURI = new URI(uri);
+            if (separator.length == 2) {
+                aURI = new URI("hl7://" + uri);
+            } else if (separator.length == 3 && !aURI.getScheme().toUpperCase(Locale.ENGLISH).equals("HL7")) {
+                throw new SiddhiAppValidationException("Invalid uri format defined in " + siddhiAppName + ":" +
+                        streamID + ". Expected uri format is {host}:{port} or hl7://{host}:{port}. ");
+            }
+            hostName = aURI.getHost();
+            port = aURI.getPort();
+            if (hostName == null || port == -1) {
+                throw new SiddhiAppValidationException("Invalid uri format defined in " + siddhiAppName + ":" +
+                        streamID + ". Expected uri format is {host}:{port} or hl7://{host}:{port}. ");
+            }
+        } catch (URISyntaxException e) {
+            throw new SiddhiAppValidationException("Invalid uri format defined in " + siddhiAppName + ":" +
+                    streamID + ". Expected uri format is {host}:{port} or hl7://{host}:{port}. ", e);
         }
     }
 }

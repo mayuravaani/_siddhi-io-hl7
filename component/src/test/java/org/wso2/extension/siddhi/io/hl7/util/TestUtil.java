@@ -32,6 +32,7 @@ import ca.uhn.hl7v2.model.v23.segment.MSH;
  * This class used to get the control id of the different message types of hl7.
  */
 public class TestUtil {
+
     private MSH msgSegment;
 
     public TestUtil() {

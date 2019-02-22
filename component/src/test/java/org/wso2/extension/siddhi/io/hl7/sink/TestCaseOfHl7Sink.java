@@ -327,6 +327,32 @@ public class TestCaseOfHl7Sink {
     }
 
     @Test(expectedExceptions = SiddhiAppValidationException.class)
+    public void hl7PublishTestInvalidUriForm() {
+
+        log.info("---------------------------------------------------------------------------------------------");
+        log.info("hl7 Sink test with uri format for Invalid Uri hl7://<host>:<port>.");
+        log.info("---------------------------------------------------------------------------------------------");
+        log = Logger.getLogger(Hl7Sink.class);
+        UnitTestAppender appender = new UnitTestAppender();
+        log.addAppender(appender);
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String siddhiApp = "@App:name('TestExecutionPlan')\n" +
+                "@sink(type='hl7', " +
+                "uri = 'hl7://local<host:5o11', " +
+                "hl7.encoding = 'xml', " +
+                "@map(type = 'xml', enclosing.element=\"<ORM_O01  xmlns='urn:hl7-org:v2xml'>\", " +
+                "@payload('<MSH><MSH.1>{{MSH1}}</MSH.1><MSH.2>{{MSH2}}</MSH.2><MSH.7><TS.1>{{MSH7TS1}}</TS.1>" +
+                "</MSH.7><MSH.9><CM_MSG.1>{{MSH9CM_MSG1}}</CM_MSG.1><CM_MSG.2>{{MSH9CM_MSG2}}</CM_MSG.2></MSH.9>" +
+                "<MSH.10>{{MSH10}}</MSH.10><MSH.11><PT.1>{{MSH11PT1}}</PT.1></MSH.11><MSH.12>{{MSH12}}" +
+                "</MSH.12></MSH>'))) " +
+                "define stream hl7stream(MSH1 string,MSH2 string,MSH7TS1 string,MSH9CM_MSG1 string," +
+                "MSH9CM_MSG2 string,MSH10 string,MSH11PT1 string,MSH12 string);  ";
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);
+        siddhiAppRuntime.start();
+        siddhiAppRuntime.shutdown();
+    }
+
+    @Test(expectedExceptions = SiddhiAppValidationException.class)
     public void hl7PublishTestUriInvalid() {
 
         log.info("---------------------------------------------------------------------------------------------");
@@ -536,7 +562,7 @@ public class TestCaseOfHl7Sink {
                 "@sink(type='hl7', " +
                 "uri = 'localhost:5009', " +
                 "hl7.encoding = 'er7', " +
-                "hl7.timeout = '1000', " +
+                "hl7.timeout = '12000', " +
                 "@map(type = 'text', @payload(\"{{payload}}\")))" +
                 "define stream hl7stream(payload string);";
 

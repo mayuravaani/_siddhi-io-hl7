@@ -33,43 +33,6 @@ import java.util.Locale;
 public class Hl7Utils {
 
     /**
-     * Handles Validation Exceptions for uri.
-     *
-     * @param uri              - uri that is used to connect the server
-     * @param siddhiStreamName - defined stream id
-     */
-    public static int getValuesFromURI(String uri, String siddhiStreamName) {
-
-        String[] separator = uri.split(":");
-        if (separator.length == 2) {
-            try {
-                Integer.parseInt(separator[1]);
-                return 2;
-            } catch (NumberFormatException e) {
-                throw new SiddhiAppValidationException("Invalid uri format defined in " + siddhiStreamName +
-                        ". Please check the port number.");
-            }
-        } else if (separator.length == 3) {
-            if (separator[0].toUpperCase(Locale.ENGLISH).equals("HL7")) {
-                try {
-                    Integer.parseInt(separator[2]);
-                    return 3;
-                } catch (NumberFormatException e) {
-                    throw new SiddhiAppValidationException("Invalid uri format defined in " + siddhiStreamName +
-                            ". Please check the port number.");
-                }
-            } else {
-                throw new SiddhiAppValidationException("Invalid uri format defined in " + siddhiStreamName +
-                        ". Expected uri format is hl7://{host}:{port} or {host}:{port}.");
-            }
-
-        } else {
-            throw new SiddhiAppValidationException("Invalid uri format defined in " + siddhiStreamName +
-                    ". Expected uri format is hl7://{host}:{port} or {host}:{port}.");
-        }
-    }
-
-    /**
      * Handles Validation Exceptions for hl7 Encoding types.
      *
      * @param hl7Encoding      - Encoding type of hl7 receiving message
