@@ -61,37 +61,37 @@ import java.util.Map;
 @Extension(
         name = "hl7",
         namespace = "source",
-        description = "The hl7 source consumes the hl7 messages using MLLP protocol.",
+        description = "The hl7 source consumes the hl7 messages using MLLP protocol. ",
         parameters = {
                 @Parameter(name = "port",
                         description = "This is the unique logical address used to establish the connection for " +
-                                "the process.",
+                                "the process. ",
                         type = {DataType.INT}),
 
                 @Parameter(name = "hl7.encoding",
                         description = "Encoding method of received hl7. This can be er7 or xml. User should define " +
-                                "hl7 encoding type according to their mapping.\n" +
-                                "e.g.,\n" +
-                                "If text mapping is used, then the hl7 encoding type should be er7.\n" +
-                                "If xml mapping is used, then the hl7 encoding type should be xml.",
+                                "hl7 encoding type according to their mapping. \n" +
+                                "e.g., \n" +
+                                "If text mapping is used, then the hl7 encoding type should be er7. \n" +
+                                "If xml mapping is used, then the hl7 encoding type should be xml. ",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "hl7.ack.encoding",
                         description = "Encoding method of hl7 to log the acknowledgment message. This parameter " +
-                                "can be specified as xml if required. Otherwise, system uses er7 format as default.",
+                                "can be specified as xml if required. Otherwise, system uses er7 format as default. ",
                         optional = true, defaultValue = "ER7",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "charset",
-                        description = "Character encoding method. Charset can be specified if required. Otherwise, \n" +
-                                "system uses UTF-8 as default charset.",
+                        description = "Character encoding method. Charset can be specified if required. Otherwise, " +
+                                "system uses UTF-8 as default charset. ",
                         optional = true, defaultValue = "UTF-8",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "tls.enabled",
                         description = "This parameter specifies whether an encrypted communication should " +
                                 "be established or not. When this parameter is set to `true`, the " +
-                                "`tls.keystore.path` and `tls.keystore.passphrase` parameters are initialized.",
+                                "`tls.keystore.path` and `tls.keystore.passphrase` parameters are initialized. ",
                         optional = true, defaultValue = "false",
                         type = {DataType.BOOL}),
 
@@ -100,7 +100,7 @@ import java.util.Map;
                                 "the HL7 events via the `MLLP` protocol. A custom keystore can be" +
                                 "specified if required. If a custom keystore is not specified, then the system" +
                                 "uses the default `wso2carbon` keystore in the `${carbon.home}/resources/security` " +
-                                "directory.",
+                                "directory. ",
                         optional = true, defaultValue = "${carbon.home}/resources/security/wso2carbon.jks",
                         type = {DataType.STRING}),
 
@@ -112,8 +112,8 @@ import java.util.Map;
                         type = {DataType.STRING}),
 
                 @Parameter(name = "tls.keystore.passphrase",
-                        description = "The passphrase for the keystore. A custom passphrase can be specified" +
-                                "if required. If no custom passphrase is specified, then the system uses" +
+                        description = "The passphrase for the keystore. A custom passphrase can be specified " +
+                                "if required. If no custom passphrase is specified, then the system uses " +
                                 "`wso2carbon` as the default passphrase.",
                         optional = true, defaultValue = "wso2carbon",
                         type = {DataType.STRING}),
@@ -122,14 +122,14 @@ import java.util.Map;
                         description = "This parameter specifies whether a `conformance profile` is used to validate " +
                                 "the incoming message or not. When the parameter is set to `true`, the " +
                                 "hl7.conformance.profile.file.name should be initialized by user. If the conformance " +
-                                "profile is used then It will send the error details along with the acknowledgment.",
+                                "profile is used then It will send the error details along with the acknowledgment. ",
                         optional = true, defaultValue = "false",
                         type = {DataType.BOOL}),
 
                 @Parameter(name = "hl7.conformance.profile.file.path",
                         description = "Path conformance profile file that is used to validate the incoming " +
                                 "message. User should give the file path, if conformance profile is used to validate " +
-                                "the message",
+                                "the message. ",
                         optional = true, defaultValue = "Empty",
                         type = {DataType.STRING})
 
@@ -141,22 +141,22 @@ import java.util.Map;
                                 "port = '1080', \n" +
                                 "hl7.encoding = 'er7', \n" +
                                 "@map(type = 'text'))\n" +
-                                "define stream hl7stream(payload string);\n"
+                                "define stream hl7stream(payload string); \n"
                         ,
-                        description = "This receives the HL7 messages using the MLLP protocol" +
-                                " and send the acknowledgement message to the client. It uses text mapping.\n "
+                        description = "This receives the HL7 messages and sends the acknowledgement message to the " +
+                                "client using the MLLP protocol and text mapping. \n "
                 ),
                 @Example(
-                        syntax = "@App:name ('Hl7TestAppForXMLtMapping') \n" +
+                        syntax = "@App:name ('Hl7TestAppForXMLMapping') \n" +
                                 "@source (type = 'hl7', \n" +
                                 "port = '1080', \n" +
                                 "hl7.encoding = 'xml', \n" +
                                 "@map (type = 'xml', namespaces = 'ns=urn:hl7-org:v2xml', @attributes(" +
                                 "MSH10 = \"ns:MSH/ns:MSH.10\", MSH3HD1 = \"ns:MSH/ns:MSH.3/ns:HD.1\")))\n" +
-                                "define stream hl7stream (MSH10 string, MSH3HD1 string);\n"
+                                "define stream hl7stream (MSH10 string, MSH3HD1 string); \n"
                         ,
-                        description = "This receives the HL7 messages using the MLLP protocol " +
-                                "and send the acknowledgement message to the client. It uses custom xml mapping.\n "
+                        description = "This receives the HL7 messages nd send the acknowledgement message to the " +
+                                "client using the MLLP protocol and custom xml mapping. \n "
                 )
         }
 )

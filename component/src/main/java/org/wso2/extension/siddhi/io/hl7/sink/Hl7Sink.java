@@ -66,10 +66,10 @@ import java.util.concurrent.TimeUnit;
 @Extension(
         name = "hl7",
         namespace = "sink",
-        description = "The hl7 sink publishes the hl7 messages using MLLP protocol.",
+        description = "The hl7 sink publishes the hl7 messages using MLLP protocol. ",
         parameters = {
                 @Parameter(name = "uri",
-                        description = "The URI that used to connect to a HL7 Server.\n " +
+                        description = "The URI that used to connect to a HL7 Server. \n " +
                                 "e.g.,\n" +
                                 "`{hostname}:{port}`, \n" +
                                 "`hl7://{hostname}:{port}` \n" +
@@ -78,38 +78,38 @@ import java.util.concurrent.TimeUnit;
 
                 @Parameter(name = "hl7.encoding",
                         description = "Encoding method of hl7. This can be er7 or xml. User should define hl7 " +
-                                "encoding type according to the input.\n" +
-                                "e.g.,\n" +
-                                "If the transmitting message is in `er7`(text) format then the encoding type should" +
-                                " be `er7`.\n" +
-                                "If the transmitting message is in `xml` format then the encoding type should" +
-                                " be `xml`.",
+                                "encoding type according to the input. \n" +
+                                "e.g., \n" +
+                                "If the transmitting message is in `er7`(text) format then the encoding type should " +
+                                "be `er7`. \n" +
+                                "If the transmitting message is in `xml` format then the encoding type should " +
+                                "be `xml`. ",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "hl7.ack.encoding",
                         description = "Encoding method of hl7 to log the acknowledgment message. This parameter can " +
-                                "be specified as `xml` if required. Otherwise, system uses `er7` format as default.",
+                                "be specified as `xml` if required. Otherwise, system uses `er7` format as default. ",
                         optional = true, defaultValue = "ER7",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "charset",
                         description = "Character encoding method. Charset can be specified if required. Otherwise, " +
-                                "system uses `UTF-8` as default charset.",
+                                "system uses `UTF-8` as default charset. ",
                         optional = true, defaultValue = "UTF-8",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "tls.enabled",
                         description = "This parameter specifies whether an encrypted communication should " +
                                 "be established or not. When this parameter is set to `true`, the " +
-                                "`tls.keystore.path` and `tls.keystore.passphrase` parameters are initialized.",
+                                "`tls.keystore.path` and `tls.keystore.passphrase` parameters are initialized. ",
                         optional = true, defaultValue = "false",
                         type = {DataType.BOOL}),
 
                 @Parameter(name = "tls.keystore.type",
                         description = "The passphrase for the keystore. A custom keystore type can be specified " +
                                 "if required. If no custom passphrase is specified, then the system uses " +
-                                "`JKS` as the default keystore type.",
-                        optional = true, defaultValue = "jks",
+                                "`JKS` as the default keystore type. ",
+                        optional = true, defaultValue = "JKS",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "tls.keystore.filepath",
@@ -117,20 +117,20 @@ import java.util.concurrent.TimeUnit;
                                 "the HL7 events via the `MLLP` protocol. A custom keystore can be " +
                                 "specified if required. If a custom keystore is not specified, then the system " +
                                 "uses the default `wso2carbon` keystore in the `${carbon.home}/resources/security` " +
-                                "directory.",
+                                "directory. ",
                         optional = true, defaultValue = "${carbon.home}/resources/security/wso2carbon.jks",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "tls.keystore.passphrase",
                         description = "The passphrase for the keystore. A custom passphrase can be specified " +
                                 "if required. If no custom passphrase is specified, then the system uses " +
-                                "`wso2carbon` as the default passphrase.",
+                                "`wso2carbon` as the default passphrase. ",
                         optional = true, defaultValue = "wso2carbon",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "hl7.timeout",
                         description = "This period of time (in milliseconds) the initiator will wait for a " +
-                                "response for a given message before timing out and throwing an exception.",
+                                "response for a given message before timing out and throwing an exception. ",
                         optional = true, defaultValue = "10000",
                         type = {DataType.INT})
         },
@@ -141,11 +141,11 @@ import java.util.concurrent.TimeUnit;
                                 "uri = 'localhost:1080', \n" +
                                 "hl7.encoding = 'er7', \n" +
                                 "@map(type = 'text', @payload(\"{{payload}}\"))) \n" +
-                                "define stream hl7stream(payload string);\n"
+                                "define stream hl7stream(payload string); \n"
                         ,
-                        description = "This publishes the HL7 messages in ER7 format using MLLP protocol " +
-                                "and receives and logs the acknowledgement message in the console. It uses " +
-                                "custom text mapping.\n "
+                        description = "This publishes the HL7 messages in ER7 format, receives and logs the " +
+                                "acknowledgement message in the console using MLLP protocol and custom text " +
+                                "mapping. \n "
                 ),
                 @Example(
                         syntax = "@App:name('Hl7TestAppForXML') \n" +
@@ -161,11 +161,10 @@ import java.util.concurrent.TimeUnit;
                                 "{{MSH11}}</MSH.11><MSH.12>{{MSH12}}</MSH.12></MSH>'))) \n" +
                                 "define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string, " +
                                 "MSH5HD1 string, MSH6HD1 string, MSH7 string, MSH8 string, CM_MSG1 string, " +
-                                "CM_MSG2 string,MSH10 string,MSH11 string, MSH12 string);\n"
+                                "CM_MSG2 string,MSH10 string,MSH11 string, MSH12 string); \n"
                         ,
-                        description = "This publishes the HL7 messages in XML format using MLLP protocol " +
-                                "and receives and logs the acknowledgement message in the console. It uses custom " +
-                                "xml mapping.\n "
+                        description = "This publishes the HL7 messages in XML format, receives and logs the " +
+                                "acknowledgement message in the console using MLLP protocol and custom xml mapping. \n "
                 )
         }
 )
