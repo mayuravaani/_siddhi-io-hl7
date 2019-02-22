@@ -468,7 +468,7 @@ public class TestCaseOfHl7Sink {
         siddhiManager.shutdown();
     }
 
-    @Test//(expectedExceptions = ConnectionUnavailableException.class)
+    @Test
     public void hl7PublishTestConnectionUnavailable() throws InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
@@ -513,7 +513,7 @@ public class TestCaseOfHl7Sink {
         siddhiAppRuntime.shutdown();
     }
 
-    @Test//(expectedExceptions = Hl7SinkAdaptorRuntimeException.class)
+    @Test
     public void hl7PublishTestUnSupportCharsetForServer() throws InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
@@ -548,39 +548,62 @@ public class TestCaseOfHl7Sink {
         siddhiAppRuntime.shutdown();
     }
 
-    @Test//(expectedExceptions = Hl7SinkRuntimeException.class)
-    public void hl7PublishTestWithDifferentTimeout() throws InterruptedException {
+    @Test
+    public void hl7PublishTestWithDifferentTimeout() throws HL7Exception, InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
-        log.info("hl7 Sink test with different timeout.");
+        log.info("hl7 Sink test with ER7 format message - multiple messages and different Message Types.");
         log.info("---------------------------------------------------------------------------------------------");
-        log = Logger.getLogger(Hl7Sink.class);
-        UnitTestAppender appender = new UnitTestAppender();
-        log.addAppender(appender);
         SiddhiManager siddhiManager = new SiddhiManager();
         String siddhiApp = "@App:name('TestExecutionPlan')\n" +
                 "@sink(type='hl7', " +
-                "uri = 'localhost:5009', " +
+                "uri = 'localhost:5011', " +
                 "hl7.encoding = 'er7', " +
                 "hl7.timeout = '5000', " +
                 "@map(type = 'text', @payload(\"{{payload}}\")))" +
                 "define stream hl7stream(payload string);";
-
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(siddhiApp);
+        hl7SinkTestUtil.connect(5011, count, eventArrived, false, 3);
         InputHandler stream = siddhiAppRuntime.getInputHandler("hl7stream");
-        hl7SinkTestUtil.connect(5009, count, eventArrived, true, 1);
         siddhiAppRuntime.start();
-        String payLoadER7 = "MSH|^~\\&|NES|NINTENDO|TESTSYSTEM|TESTFACILITY|20010101000000||ADT^A04|" +
+        String payLoadER71 = "MSH|^~\\&|NES|NINTENDO|TESTSYSTEM|TESTFACILITY|20010101000000||ADT^A01|" +
+                "M123456789T123456789X123456|P|2.3\r" +
+                "EVN|A01|20010101000000|||^KOOPA^BOWSER^^^^^^^CURRENT\r" +
+                "PID|1||123456789|0123456789^AA^^JP|BROS^MARIO^^^^||19850101000000|M|||" +
+                "123 FAKE STREET^MARIO \\T\\ LUIGI BROS PLACE^TOADSTOOL KINGDOM^NES^A1B2C3^JP^HOME^^1234|1234|" +
+                "(555)555-0123^HOME^JP:1234567|||S|MSH|12345678|||||||0|||||N\r" +
+                "NK1|1|PEACH^PRINCESS^^^^|SO|ANOTHER CASTLE^^TOADSTOOL KINGDOM^NES^^JP|(123)555-1234|" +
+                "(123)555-2345|NOK|||||||||||||\r" +
+                "NK2|2|TOADSTOOL^PRINCESS^^^^|SO|YET ANOTHER CASTLE^^TOADSTOOL KINGDOM^NES^^JP|(123)555-3456|" +
+                "(123)555-4567|EMC|||||||||||||\r" +
+                "PV1|1|O|ABCD^EFGH^|||^^|123456^DINO^YOSHI^^^^^^MSRM^CURRENT^^^NEIGHBOURHOOD DR NBR^|" +
+                "^DOG^DUCKHUNT^^^^^^^CURRENT||CRD|||||||123456^DINO^YOSHI^^^^^^MSRM^CURRENT^^^NEIGHBOURHOOD " +
+                "DR NBR^|AO|0123456789|1|||||||||||||||||||MSH||A|||20010101000000\r" +
+                "IN1|1|PAR^PARENT||||LUIGI\r" +
+                "IN2|2|FRI^FRIEND||||PRINCESS\r";
+        String payLoadER72 = "MSH|^~\\&|NES|NINTENDO|TESTSYSTEM|TESTFACILITY|20010101000000||ADT^A04|" +
                 "Q123456789T123456789X123456|P|2.3\r" +
                 "EVN|A04|20010101000000|||^KOOPA^BOWSER^^^^^^^CURRENT\r";
+        String payLoadER73 = "MSH|^~\\&|||||20190122111442.228+0530||ORU^R01|R6546556101|T|2.3\r";
         try {
-            stream.send(new Object[]{payLoadER7});
+            stream.send(new Object[]{payLoadER71});
+            stream.send(new Object[]{payLoadER72});
+            stream.send(new Object[]{payLoadER73});
+
         } catch (InterruptedException e) {
             AssertJUnit.fail("interrupted");
         }
-        AssertJUnit.assertTrue(appender.getMessages().contains("Error occurred while processing the message. " +
-                "Please check the TestExecutionPlan:hl7stream"));
-
+        Message payLoadER71Msg = pipeParser.parse(payLoadER71);
+        Message payLoadER72Msg = pipeParser.parse(payLoadER72);
+        Message payLoadER73Msg = pipeParser.parse(payLoadER73);
+        Thread.sleep(3000);
+        count = hl7SinkTestUtil.getCount();
+        eventArrived = hl7SinkTestUtil.getEventArrived();
+        AssertJUnit.assertEquals(3, count);
+        AssertJUnit.assertTrue(eventArrived);
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadER71Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadER72Msg)));
+        AssertJUnit.assertTrue(hl7SinkTestUtil.assertMessageContent(testUtil.getControlID(payLoadER73Msg)));
         siddhiAppRuntime.shutdown();
     }
 
@@ -604,7 +627,7 @@ public class TestCaseOfHl7Sink {
 
     }
 
-    @Test//(expectedExceptions = Hl7SinkRuntimeException.class)
+    @Test
     public void hl7PublishTestUnsupportedHl7Encoding() throws InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");
@@ -704,7 +727,7 @@ public class TestCaseOfHl7Sink {
         siddhiAppRuntime.shutdown();
     }
 
-    @Test//(expectedExceptions = Hl7SinkRuntimeException.class)
+    @Test
     public void hl7PublishTestInputMessageWrongFormat() throws InterruptedException {
 
         log.info("---------------------------------------------------------------------------------------------");

@@ -184,7 +184,6 @@ public class TestCaseOfHl7Source {
                 "EVN|A01|20190123062351\r";
         stream.send(new Object[]{payLoadER71});
         stream.send(new Object[]{payLoadER72});
-        // Thread.sleep(10000);
         List<String> expected = new ArrayList<>(2);
         expected.add(testUtil.getControlID(pipeParser.parse(payLoadER71)));
         expected.add(testUtil.getControlID(pipeParser.parse(payLoadER72)));

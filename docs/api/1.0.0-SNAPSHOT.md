@@ -63,7 +63,7 @@
     </tr>
     <tr>
         <td style="vertical-align: top">tls.keystore.type</td>
-        <td style="vertical-align: top; word-wrap: break-word">The passphrase for the keystore. A custom keystore type can be specified if required. If no custom passphrase is specified, then the system uses <code>JKS</code> as the default keystore type. </td>
+        <td style="vertical-align: top; word-wrap: break-word">The type for the keystore. A custom keystore type can be specified if required. If no custom keystore type is specified, then the system uses <code>JKS</code> as the default keystore type. </td>
         <td style="vertical-align: top">JKS</td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">Yes</td>
@@ -191,8 +191,8 @@ define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string
     </tr>
     <tr>
         <td style="vertical-align: top">tls.keystore.type</td>
-        <td style="vertical-align: top; word-wrap: break-word">The passphrase for the keystore. A custom keystore type can be specified if required. If no custom passphrase is specified, then the system uses <code>JKS</code> as the default keystore type.</td>
-        <td style="vertical-align: top">jks</td>
+        <td style="vertical-align: top; word-wrap: break-word">The type for the keystore. A custom keystore type can be specified if required. If no custom keystore type is specified, then the system uses <code>JKS</code> as the default keystore type.</td>
+        <td style="vertical-align: top">JKS</td>
         <td style="vertical-align: top">STRING</td>
         <td style="vertical-align: top">Yes</td>
         <td style="vertical-align: top">No</td>
