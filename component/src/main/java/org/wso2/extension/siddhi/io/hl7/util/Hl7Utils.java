@@ -19,12 +19,19 @@
 package org.wso2.extension.siddhi.io.hl7.util;
 
 import ca.uhn.hl7v2.hoh.util.IOUtils;
+import ca.uhn.hl7v2.hoh.util.KeystoreUtils;
+import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Locale;
 
 /**
@@ -37,7 +44,7 @@ public class Hl7Utils {
      *
      * @param hl7Encoding      - Encoding type of hl7 receiving message
      * @param hl7AckEncoding   - Encoding type of hl7 acknowledgement message
-     * @param siddhiStreamName - defined stream id
+     * @param siddhiStreamName - Defined stream id
      */
     public static void validateEncodingType(String hl7Encoding, String hl7AckEncoding, String siddhiStreamName) {
 
@@ -56,9 +63,47 @@ public class Hl7Utils {
     }
 
     /**
+     * Handles Validation Exceptions for Enabling Tls
+     *
+     * @param tlsEnabled            - Check whether tls Enabled or not
+     * @param tlsKeystoreFilepath   - Filepath of the keystore
+     * @param tlsKeystorePassphrase - Passphrase of the keystore
+     * @param tlsKeystoreType       - Type of the keystore
+     * @param siddhiAppName         - Defined siddhi app name
+     * @param streamID              - defined stream id
+     */
+    public static void doTlsValidation(boolean tlsEnabled, String tlsKeystoreFilepath, String tlsKeystorePassphrase,
+                                String tlsKeystoreType, String siddhiAppName, String streamID) {
+
+        if (tlsEnabled) {
+            try {
+                KeyStore keyStore = KeystoreUtils.loadKeystore(tlsKeystoreFilepath, tlsKeystorePassphrase);
+                KeyStore.getInstance(tlsKeystoreType);
+                KeystoreUtils.validateKeystoreForTlsSending(keyStore);
+            } catch (FileNotFoundException e) {
+                throw new SiddhiAppCreationException("Failed to found the keystore file." +
+                        " Please check the tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " +
+                        siddhiAppName + ":" + streamID + ". ", e);
+            } catch (IOException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
+                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " + siddhiAppName + ":" +
+                        streamID + ". ", e);
+            } catch (CertificateException | NoSuchAlgorithmException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore. please check the keystore defined in" +
+                        siddhiAppName + ":" + streamID + ". ", e);
+            } catch (KeyStoreException e) {
+                throw new SiddhiAppCreationException("Failed to load keystore. Please check " +
+                        "the tls.keystore.type = " + tlsKeystoreType + "  defined in " + siddhiAppName + ":" +
+                        streamID + ". ", e);
+            }
+        }
+    }
+
+
+    /**
      * Used to parse the inputStream to String type
      *
-     * @param in fileInputStream
+     * @param in - fileInputStream
      * @return String type of inputStream
      */
     public static String streamToString(InputStream in) throws IOException {

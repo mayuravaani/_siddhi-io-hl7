@@ -26,7 +26,6 @@ import ca.uhn.hl7v2.conf.parser.ProfileParser;
 import ca.uhn.hl7v2.conf.spec.RuntimeProfile;
 import ca.uhn.hl7v2.hoh.sockets.CustomCertificateTlsSocketFactory;
 import ca.uhn.hl7v2.hoh.util.HapiSocketTlsFactoryWrapper;
-import ca.uhn.hl7v2.hoh.util.KeystoreUtils;
 import ca.uhn.hl7v2.llp.MinLowerLayerProtocol;
 
 import org.apache.log4j.Logger;
@@ -45,13 +44,8 @@ import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.Map;
 
 /**
@@ -105,10 +99,10 @@ import java.util.Map;
                         type = {DataType.STRING}),
 
                 @Parameter(name = "tls.keystore.type",
-                        description = "The passphrase for the keystore. A custom keystore type can be specified " +
-                                "if required. If no custom passphrase is specified, then the system uses " +
+                        description = "The type for the keystore. A custom keystore type can be specified " +
+                                "if required. If no custom keystore type is specified, then the system uses " +
                                 "`JKS` as the default keystore type.",
-                        optional = true, defaultValue = "jks",
+                        optional = true, defaultValue = "JKS",
                         type = {DataType.STRING}),
 
                 @Parameter(name = "tls.keystore.passphrase",
@@ -210,7 +204,8 @@ public class Hl7Source extends Source {
         if (conformanceProfileUsed) {
             conformanceProfile = getConformanceProfile(profileFileName);
         }
-        doTlsValidation();
+        Hl7Utils.doTlsValidation(tlsEnabled, tlsKeystoreFilepath, tlsKeystorePassphrase, tlsKeystoreType,
+                siddhiAppName, streamID);
     }
 
     @Override
@@ -311,31 +306,4 @@ public class Hl7Source extends Source {
                     "dropping the validation. ");
         }
     }
-
-    private void doTlsValidation() {
-
-        if (tlsEnabled) {
-            try {
-
-                KeyStore keyStore = KeystoreUtils.loadKeystore(tlsKeystoreFilepath, tlsKeystorePassphrase);
-                KeyStore.getInstance(tlsKeystoreType);
-                KeystoreUtils.validateKeystoreForTlsSending(keyStore);
-            } catch (FileNotFoundException e) {
-                throw new SiddhiAppCreationException("Failed to found the keystore file. Please check the " +
-                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " + siddhiAppName + ":" +
-                        streamID + ". ", e);
-            } catch (IOException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
-                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " + siddhiAppName + ":" +
-                        streamID + ". ", e);
-            } catch (CertificateException | NoSuchAlgorithmException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore. please check the keystore defined in" +
-                        siddhiAppName + ":" + streamID + ". ", e);
-            } catch (KeyStoreException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore. Please check the tls.keystore.type = " +
-                        tlsKeystoreType + "  defined in " + siddhiAppName + ":" + streamID + ". ", e);
-            }
-        }
-    }
-
 }

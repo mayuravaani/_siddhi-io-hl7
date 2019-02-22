@@ -562,7 +562,7 @@ public class TestCaseOfHl7Sink {
                 "@sink(type='hl7', " +
                 "uri = 'localhost:5009', " +
                 "hl7.encoding = 'er7', " +
-                "hl7.timeout = '12000', " +
+                "hl7.timeout = '5000', " +
                 "@map(type = 'text', @payload(\"{{payload}}\")))" +
                 "define stream hl7stream(payload string);";
 

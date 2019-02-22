@@ -25,7 +25,6 @@ import ca.uhn.hl7v2.app.Connection;
 import ca.uhn.hl7v2.app.Initiator;
 import ca.uhn.hl7v2.hoh.sockets.CustomCertificateTlsSocketFactory;
 import ca.uhn.hl7v2.hoh.util.HapiSocketTlsFactoryWrapper;
-import ca.uhn.hl7v2.hoh.util.KeystoreUtils;
 import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.llp.MinLowerLayerProtocol;
 import ca.uhn.hl7v2.model.Message;
@@ -40,7 +39,6 @@ import org.wso2.siddhi.annotation.Parameter;
 import org.wso2.siddhi.annotation.util.DataType;
 import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.exception.ConnectionUnavailableException;
-import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.core.stream.output.sink.Sink;
 import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.core.util.transport.DynamicOptions;
@@ -48,14 +46,9 @@ import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -106,8 +99,8 @@ import java.util.concurrent.TimeUnit;
                         type = {DataType.BOOL}),
 
                 @Parameter(name = "tls.keystore.type",
-                        description = "The passphrase for the keystore. A custom keystore type can be specified " +
-                                "if required. If no custom passphrase is specified, then the system uses " +
+                        description = "The type for the keystore. A custom keystore type can be specified " +
+                                "if required. If no custom keystore type is specified, then the system uses " +
                                 "`JKS` as the default keystore type. ",
                         optional = true, defaultValue = "JKS",
                         type = {DataType.STRING}),
@@ -225,7 +218,8 @@ public class Hl7Sink extends Sink {
         this.hapiContext = new DefaultHapiContext();
         getValuesFromUri();
         Hl7Utils.validateEncodingType(hl7Encoding, hl7AckEncoding, streamDefinition.getId());
-        doTlsValidation();
+        Hl7Utils.doTlsValidation(tlsEnabled, tlsKeystoreFilepath, tlsKeystorePassphrase, tlsKeystoreType,
+                siddhiAppName, streamID);
     }
 
     @Override
@@ -252,7 +246,7 @@ public class Hl7Sink extends Sink {
                 } else {
                     responseString = xmlParser.encode(response);
                 }
-                log.info("Received Response from : " + connection.getRemoteAddress() + ":" +
+                log.info("Received Response from: " + connection.getRemoteAddress() + ":" +
                         connection.getRemotePort() + "\n" + responseString.replaceAll("\r", "\n"));
             } catch (HL7Exception e) {
                 throw new Hl7SinkRuntimeException("Error occurred while encoding the Received ACK Message " +
@@ -318,32 +312,6 @@ public class Hl7Sink extends Sink {
     @Override
     public void restoreState(Map<String, Object> map) {
 
-    }
-
-    private void doTlsValidation() {
-
-        if (tlsEnabled) {
-            try {
-                KeyStore keyStore = KeystoreUtils.loadKeystore(tlsKeystoreFilepath, tlsKeystorePassphrase);
-                KeyStore.getInstance(tlsKeystoreType);
-                KeystoreUtils.validateKeystoreForTlsSending(keyStore);
-            } catch (FileNotFoundException e) {
-                throw new SiddhiAppCreationException("Failed to found the keystore file." +
-                        " Please check the tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " +
-                        siddhiAppName + ":" + streamID + ". ", e);
-            } catch (IOException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore. Please check the " +
-                        "tls.keystore.filepath = " + tlsKeystoreFilepath + " defined in " + siddhiAppName + ":" +
-                        streamID + ". ", e);
-            } catch (CertificateException | NoSuchAlgorithmException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore. please check the keystore defined in" +
-                        siddhiAppName + ":" + streamID + ". ", e);
-            } catch (KeyStoreException e) {
-                throw new SiddhiAppCreationException("Failed to load keystore in Siddhi App. Please check " +
-                        "the tls.keystore.type = " + tlsKeystoreType + "  defined in " + siddhiAppName + ":" +
-                        streamID + ". ", e);
-            }
-        }
     }
 
     private void getValuesFromUri() {
