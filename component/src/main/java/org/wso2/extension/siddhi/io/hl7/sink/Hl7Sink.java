@@ -247,7 +247,8 @@ public class Hl7Sink extends Sink {
                     responseString = xmlParser.encode(response);
                 }
                 log.info("Received Response from: " + connection.getRemoteAddress() + ":" +
-                        connection.getRemotePort() + "\n" + responseString.replaceAll("\r", "\n"));
+                        connection.getRemotePort() + " for stream " + siddhiAppName + ":" + streamID + "\n" +
+                        responseString.replaceAll("\r", "\n"));
             } catch (HL7Exception e) {
                 throw new Hl7SinkRuntimeException("Error occurred while encoding the Received ACK Message " +
                         "into String for stream: " + siddhiAppName + ":" + streamID + ". ", e);
