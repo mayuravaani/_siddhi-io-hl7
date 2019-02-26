@@ -226,8 +226,8 @@ define stream hl7stream(MSH1 string, MSH2 string, MSH3HD1 string, MSH4HD1 string
 <span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span>
 ```
-@App:name ('Hl7TestAppForTextMapping') 
-@source (type = 'hl7', 
+@App:name('Hl7TestAppForTextMapping') 
+@source(type = 'hl7', 
 port = '1080', 
 hl7.encoding = 'er7', 
 @map(type = 'text'))

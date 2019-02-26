@@ -130,8 +130,8 @@ import java.util.Map;
         },
         examples = {
                 @Example(
-                        syntax = "@App:name ('Hl7TestAppForTextMapping') \n" +
-                                "@source (type = 'hl7', \n" +
+                        syntax = "@App:name('Hl7TestAppForTextMapping') \n" +
+                                "@source(type = 'hl7', \n" +
                                 "port = '1080', \n" +
                                 "hl7.encoding = 'er7', \n" +
                                 "@map(type = 'text'))\n" +
@@ -141,11 +141,11 @@ import java.util.Map;
                                 "client using the MLLP protocol and text mapping. \n "
                 ),
                 @Example(
-                        syntax = "@App:name ('Hl7TestAppForXMLMapping') \n" +
-                                "@source (type = 'hl7', \n" +
+                        syntax = "@App:name('Hl7TestAppForXMLMapping') \n" +
+                                "@source(type = 'hl7', \n" +
                                 "port = '1080', \n" +
                                 "hl7.encoding = 'xml', \n" +
-                                "@map (type = 'xml', namespaces = 'ns=urn:hl7-org:v2xml', @attributes(" +
+                                "@map(type = 'xml', namespaces = 'ns=urn:hl7-org:v2xml', @attributes(" +
                                 "MSH10 = \"ns:MSH/ns:MSH.10\", MSH3HD1 = \"ns:MSH/ns:MSH.3/ns:HD.1\")))\n" +
                                 "define stream hl7stream (MSH10 string, MSH3HD1 string); \n"
                         ,
