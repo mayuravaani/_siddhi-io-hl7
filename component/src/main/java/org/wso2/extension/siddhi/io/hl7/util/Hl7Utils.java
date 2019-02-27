@@ -44,20 +44,22 @@ public class Hl7Utils {
      *
      * @param hl7Encoding      - Encoding type of hl7 receiving message
      * @param hl7AckEncoding   - Encoding type of hl7 acknowledgement message
-     * @param siddhiStreamName - Defined stream id
+     * @param siddhiAppName         - Defined siddhi app name
+     * @param streamID              - defined stream id
      */
-    public static void validateEncodingType(String hl7Encoding, String hl7AckEncoding, String siddhiStreamName) {
+    public static void validateEncodingType(String hl7Encoding, String hl7AckEncoding, String siddhiAppName,
+                                            String streamID) {
 
         if (!(hl7Encoding.toUpperCase(Locale.ENGLISH).equals("ER7") ||
                 hl7Encoding.toUpperCase(Locale.ENGLISH).equals("XML"))) {
-            throw new SiddhiAppValidationException("Invalid hl7.encoding type defined in " + siddhiStreamName +
-                    ". hl7.encoding type should be er7 or xml.");
+            throw new SiddhiAppValidationException("Invalid hl7.encoding type defined in " + siddhiAppName + ":" +
+                    streamID + ". hl7.encoding type should be er7 or xml.");
 
         }
         if (!(hl7AckEncoding.toUpperCase(Locale.ENGLISH).equals("ER7") ||
                 hl7AckEncoding.toUpperCase(Locale.ENGLISH).equals("XML"))) {
-            throw new SiddhiAppValidationException("Invalid hl7.ack.encoding type defined in " + siddhiStreamName +
-                    ". hl7.ack.encoding type should be er7 or xml.");
+            throw new SiddhiAppValidationException("Invalid hl7.ack.encoding type defined in " + siddhiAppName + ":" +
+                    streamID + ". hl7.ack.encoding type should be er7 or xml.");
 
         }
     }

@@ -238,11 +238,11 @@ define stream hl7stream(payload string);
 
 <span id="example-2" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 2</span>
 ```
-@App:name ('Hl7TestAppForXMLMapping') 
-@source (type = 'hl7', 
+@App:name('Hl7TestAppForXMLMapping') 
+@source(type = 'hl7', 
 port = '1080', 
 hl7.encoding = 'xml', 
-@map (type = 'xml', namespaces = 'ns=urn:hl7-org:v2xml', @attributes(MSH10 = "ns:MSH/ns:MSH.10", MSH3HD1 = "ns:MSH/ns:MSH.3/ns:HD.1")))
+@map(type = 'xml', namespaces = 'ns=urn:hl7-org:v2xml', @attributes(MSH10 = "ns:MSH/ns:MSH.10", MSH3HD1 = "ns:MSH/ns:MSH.3/ns:HD.1")))
 define stream hl7stream (MSH10 string, MSH3HD1 string); 
 
 ```

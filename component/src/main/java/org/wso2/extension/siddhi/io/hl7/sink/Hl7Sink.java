@@ -217,7 +217,7 @@ public class Hl7Sink extends Sink {
                 Hl7Constants.DEFAULT_TLS_KEYSTORE_TYPE);
         this.hapiContext = new DefaultHapiContext();
         getValuesFromUri();
-        Hl7Utils.validateEncodingType(hl7Encoding, hl7AckEncoding, streamDefinition.getId());
+        Hl7Utils.validateEncodingType(hl7Encoding, hl7AckEncoding, siddhiAppName, streamID);
         Hl7Utils.doTlsValidation(tlsEnabled, tlsKeystoreFilepath, tlsKeystorePassphrase, tlsKeystoreType,
                 siddhiAppName, streamID);
     }

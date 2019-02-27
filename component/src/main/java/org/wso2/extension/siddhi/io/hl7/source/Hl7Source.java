@@ -197,7 +197,7 @@ public class Hl7Source extends Source {
                 Hl7Constants.DEFAULT_CONFORMANCE_PROFILE_USED));
         String profileFileName = optionHolder.validateAndGetStaticValue(Hl7Constants.HL7_CONFORMANCE_PROFILE_FILE,
                 Hl7Constants.DEFAULT_CONFORMANCE_PROFILE_FILE);
-        Hl7Utils.validateEncodingType(hl7Encoding, hl7AckEncoding, sourceEventListener.getStreamDefinition().getId());
+        Hl7Utils.validateEncodingType(hl7Encoding, hl7AckEncoding, siddhiAppName, streamID);
         this.hl7ReceivingApp = new Hl7ReceivingApp();
         this.tlsKeystoreType = optionHolder.validateAndGetStaticValue(Hl7Constants.TLS_KEYSTORE_TYPE,
                 Hl7Constants.DEFAULT_TLS_KEYSTORE_TYPE);
